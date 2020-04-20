@@ -7,6 +7,11 @@ import datetime
 dag = DAG('osf_pipeline')
 
 
+def write_to_file(data):
+    with open("/tmp/airflow_data.json", "w") as f:
+        f.write(json.dumps(data))
+
+
 def merge_data(**context):
     ej_votes_list = json.loads(context['task_instance'].xcom_pull(
         task_ids='request_ej_reports_data'))
@@ -22,6 +27,7 @@ def merge_data(**context):
                 merge_data = {**vote, **mautic_contact}
                 break
         continue
+    write_to_file(merge_data)
     return merge_data
 
 
@@ -55,7 +61,6 @@ t3 = PythonOperator(
     provide_context=True,
     python_callable=merge_data,
     task_id="merge_ej_mautic_data",
-    xcom_push=True,
     dag=dag
 )
 
