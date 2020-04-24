@@ -3,6 +3,7 @@ from airflow.operators.http_operator import SimpleHttpOperator
 from airflow.operators.python_operator import PythonOperator
 import json
 import datetime
+import re
 
 dag = DAG('osf_pipeline')
 
@@ -13,20 +14,28 @@ def write_to_file(data):
 
 
 def merge_data(**context):
-    ej_votes_list = json.loads(context['task_instance'].xcom_pull(
+    list_of_ej_votes = json.loads(context['task_instance'].xcom_pull(
         task_ids='request_ej_reports_data'))
     mautic_data = json.loads(context['task_instance'].xcom_pull(
         task_ids='request_mautic_data'))
-    mautic_contact = mautic_data["contacts"]["1"]
+    list_of_mautic_contacts_ids = list(mautic_data["contacts"])
     merge_data = {}
-    for vote in ej_votes_list:
+    for vote in list_of_ej_votes:
         if(len(vote["email"].split('-')) > 1):
             mtc_id = vote["email"].split('-')[0]
-            label = vote["email"].split('-')[1]
-            if(mtc_id == "1" and label == 'mautic@mail.com'):
-                merge_data = {**vote, **mautic_contact}
-                break
-        continue
+            email_sufix = vote["email"].split('-')[1]
+            if(email_sufix == 'mautic@mail.com'):
+                if(mtc_id in list_of_mautic_contacts_ids):
+                    _ga = mautic_data["contacts"][mtc_id]["fields"]["core"]["gid"]["value"]
+                    _gaValue = re.sub(r'^GA[0-9]*\.[0-9]*\.*', '', _ga)
+                    mautic_email = mautic_data["contacts"][mtc_id]["fields"]["core"]["email"]["value"]
+                    first_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["firstname"]["value"]
+                    last_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["lastname"]["value"]
+                    if(_ga):
+                        merge_data = {**vote, **{"analytics_client_id": _gaValue,
+                                                 "mautic_email": mautic_email,
+                                                 "mautic_first_name": first_name,
+                                                 "mautic_last_name": last_name}}
     write_to_file(merge_data)
     return merge_data
 
