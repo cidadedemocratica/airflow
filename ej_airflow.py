@@ -4,13 +4,18 @@ from airflow.operators.python_operator import PythonOperator
 import json
 import datetime
 import re
+import pandas as pd
+import numpy as np
+import analytics_api as analytics
 
 dag = DAG('osf_pipeline')
 
 
-def write_to_file(data):
-    with open("/tmp/airflow_data.json", "w") as f:
-        f.write(json.dumps(data))
+def collect_client_page_view(client_ids):
+    analytics_client = analytics.initialize_analyticsreporting()
+    for _id in client_ids:
+        response = analytics.get_report(analytics_client, _id)
+        print("RESPONSE: ", response)
 
 
 def merge_data(**context):
@@ -36,8 +41,25 @@ def merge_data(**context):
                                                  "mautic_email": mautic_email,
                                                  "mautic_first_name": first_name,
                                                  "mautic_last_name": last_name}}
-    write_to_file(merge_data)
-    return merge_data
+    print("MERGED DATA: ", merge_data)
+    if merge_data:
+        df1 = pd.DataFrame([merge_data])
+        df2 = pd.read_csv('/tmp/analytics.csv',
+                          dtype={'Client Id': str}, header=5)
+        df2 = df2.rename(columns={'Client Id': 'analytics_client_id'})
+        df3 = pd.merge(df1, df2, on='analytics_client_id')
+        analytics_client = analytics.initialize_analyticsreporting()
+        analytic_activities = []
+        for _id in df3['analytics_client_id']:
+            response = analytics.get_report(analytics_client, _id)
+            for session in response['sessions']:
+                for activity in session['activities']:
+                    activity['analytics_client_id'] = _id
+                    analytic_activities.append(activity)
+
+        df4 = pd.DataFrame(analytic_activities)
+        df3.to_csv('/tmp/ej_analytics_mautic.csv')
+        df4.to_csv('/tmp/analytics_page_view.csv')
 
 
 t1 = SimpleHttpOperator(
