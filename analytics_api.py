@@ -7,11 +7,12 @@ import httplib2
 from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
+import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
 CLIENT_SECRETS_PATH = '/tmp/client_secrets.json'
-VIEW_ID = '216474645'
+VIEW_ID = '215248741'
 
 
 def initialize_analyticsreporting():
@@ -48,7 +49,11 @@ def initialize_analyticsreporting():
 
 
 def get_report(analytics, userID):
-    # Use the Analytics Service Object to query the Analytics Reporting API V4.
+    # start from datetime.now - 15 days
+    startDate = (datetime.datetime.now(datetime.timezone.utc) -
+                 datetime.timedelta(days=15)).strftime("%Y-%m-%d")
+    # include today on report
+    endDate = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     return analytics.userActivity().search(
         body={
             "viewId": VIEW_ID,
@@ -56,6 +61,9 @@ def get_report(analytics, userID):
                 "type": "CLIENT_ID",
                 "userId": userID
             },
+            "dateRange": {
+                "startDate": startDate,
+                "endDate": endDate}
         }
     ).execute()
 

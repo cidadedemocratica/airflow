@@ -24,7 +24,7 @@ def merge_data(**context):
     mautic_data = json.loads(context['task_instance'].xcom_pull(
         task_ids='request_mautic_data'))
     list_of_mautic_contacts_ids = list(mautic_data["contacts"])
-    merge_data = {}
+    ej_mautic_analytics = []
     for vote in list_of_ej_votes:
         if(len(vote["email"].split('-')) > 1):
             mtc_id = vote["email"].split('-')[0]
@@ -32,21 +32,22 @@ def merge_data(**context):
             if(email_sufix == 'mautic@mail.com'):
                 if(mtc_id in list_of_mautic_contacts_ids):
                     _ga = mautic_data["contacts"][mtc_id]["fields"]["core"]["gid"]["value"]
-                    _gaValue = re.sub(r'^GA[0-9]*\.[0-9]*\.*', '', _ga)
-                    mautic_email = mautic_data["contacts"][mtc_id]["fields"]["core"]["email"]["value"]
-                    first_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["firstname"]["value"]
-                    last_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["lastname"]["value"]
                     if(_ga):
-                        merge_data = {**vote, **{"analytics_client_id": _gaValue,
-                                                 "mautic_email": mautic_email,
-                                                 "mautic_first_name": first_name,
-                                                 "mautic_last_name": last_name}}
-    print("MERGED DATA: ", merge_data)
+                        _gaValue = re.sub(r'^GA[0-9]*\.[0-9]*\.*', '', _ga)
+                        mautic_email = mautic_data["contacts"][mtc_id]["fields"]["core"]["email"]["value"]
+                        first_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["firstname"]["value"]
+                        last_name = mautic_data["contacts"][mtc_id]["fields"]["core"]["lastname"]["value"]
+                        ej_mautic_analytics.append({**vote, **{"analytics_client_id": _gaValue,
+                                                               "mautic_email": mautic_email,
+                                                               "mautic_first_name": first_name,
+                                                               "mautic_last_name": last_name}})
+    print("MERGED DATA: ", ej_mautic_analytics)
     if merge_data:
-        df1 = pd.DataFrame([merge_data])
-        df2 = pd.read_csv('/tmp/analytics.csv',
-                          dtype={'Client Id': str}, header=5)
-        df2 = df2.rename(columns={'Client Id': 'analytics_client_id'})
+        df1 = pd.DataFrame(ej_mautic_analytics)
+        analytics_user_explorer = pd.read_csv('/tmp/analytics.csv',
+                                              dtype={'Client Id': str}, header=5)
+        df2 = analytics_user_explorer.rename(
+            columns={'Client Id': 'analytics_client_id'})
         df3 = pd.merge(df1, df2, on='analytics_client_id')
         analytics_client = analytics.initialize_analyticsreporting()
         analytic_activities = []
@@ -57,6 +58,7 @@ def merge_data(**context):
                     activity['analytics_client_id'] = _id
                     analytic_activities.append(activity)
 
+        print("ANALYTICS ACTIVITIES: ", analytic_activities)
         df4 = pd.DataFrame(analytic_activities)
         df3.to_csv('/tmp/ej_analytics_mautic.csv')
         df4.to_csv('/tmp/analytics_page_view.csv')
@@ -65,8 +67,8 @@ def merge_data(**context):
 t1 = SimpleHttpOperator(
     start_date=datetime.datetime.now(),
     task_id="request_ej_reports_data",
-    http_conn_id="ej_api",
-    endpoint='/api/v1/conversations/1/reports?fmt=json&&export=votes',
+    http_conn_id="ej_prod_api",
+    endpoint='/api/v1/conversations/56/reports?fmt=json&&export=votes',
     method="GET",
     headers={"Accept": "text/csv"},
     response_check=lambda response: True if response.content else False,
@@ -78,10 +80,11 @@ t1 = SimpleHttpOperator(
 t2 = SimpleHttpOperator(
     start_date=datetime.datetime.now(),
     task_id="request_mautic_data",
-    http_conn_id="mautic_api",
-    endpoint='/api/contacts/',
+    http_conn_id="mautic_prod_api",
+    endpoint='/api/contacts?limit=300',
     method="GET",
-    headers={"Authorization": "Basic ZGF2aWRjYXJsb3M6RGF2aWRAMTNjYQ=="},
+    headers={
+        "Authorization": "Basic cmljYXJkb0BjaWRhZGVkZW1vY3JhdGljYS5vcmcuYnI6cVlVNjQzNHJPRjNQ"},
     response_check=lambda response: True if response.content else False,
     log_response=True,
     xcom_push=True,
