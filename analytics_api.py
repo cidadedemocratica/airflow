@@ -43,7 +43,8 @@ def initialize_analyticsreporting():
     http = credentials.authorize(http=httplib2.Http())
 
     # Build the service object.
-    analytics = build('analyticsreporting', 'v4', http=http)
+    analytics = build('analyticsreporting', 'v4',
+                      http=http, cache_discovery=False)
 
     return analytics
 
