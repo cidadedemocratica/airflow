@@ -1,5 +1,6 @@
 """Hello Analytics Reporting API V4."""
 
+import os
 import argparse
 
 from apiclient.discovery import build
@@ -9,10 +10,13 @@ from oauth2client import file
 from oauth2client import tools
 import datetime
 
+from dotenv import load_dotenv
+load_dotenv()
+
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
 CLIENT_SECRETS_PATH = '/tmp/client_secrets.json'
-VIEW_ID = '215248741'
+VIEW_ID = os.getenv("VIEW_ID")
 
 
 def initialize_analyticsreporting():
@@ -36,7 +40,7 @@ def initialize_analyticsreporting():
     # If the credentials don't exist or are invalid run through the native client
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
-    storage = file.Storage('analyticsreporting.dat')
+    storage = file.Storage('.analyticsreporting.dat')
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)

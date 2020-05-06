@@ -2,3 +2,4 @@ python-dateutil
 google-api-python-client
 apache-airflow
 pandas
+python-dotenv
