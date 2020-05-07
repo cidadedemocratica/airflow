@@ -1,8 +1,7 @@
-prepare:
+run:
 ifneq ($(and $(env)),)
-	cp client_secrets.json /tmp/
-	cp .${env}.env .env
-	pip install -r requirements.txt
+	env=${env} docker-compose build
+	env=${env} docker-compose up
 else
 	@printf "provide the env variable. (env=local or env=prod)"
 endif

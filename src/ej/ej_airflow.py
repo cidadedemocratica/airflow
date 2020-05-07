@@ -1,28 +1,48 @@
-import os
 from airflow.models import DAG
 from airflow.operators.http_operator import SimpleHttpOperator
 from airflow.operators.python_operator import PythonOperator
 from dateutil.parser import *
+from src import analytics_api as analytics
+import os
 import json
 import datetime
 import re
 import pandas as pd
-import analytics_api as analytics
+from airflow.utils.dates import days_ago
 
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
+CURRENT_ENV = os.getenv('AIRFLOW_ENV', 'prod')
+env_path = Path('.') / f"/tmp/.{CURRENT_ENV}.env"
+load_dotenv(dotenv_path=env_path)
 
 
-dag = DAG('osf_pipeline')
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime.datetime.now() - datetime.timedelta(minutes=10),
+    'email': ['airflow@example.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 0
+}
+
+dag = DAG('osf_pipeline', default_args=default_args)
 
 
 def vote_belongs_to_activity(voteCreatedTime, activityTime):
-    utc_vote_date = parse(voteCreatedTime)
+    # Votes from EJ, are in utc date format, activities from analytics are not.
+    # We will have to parse all to utc (better solution).
+    # For a quick fix, we subtract three hours from vote date, to match Sao Paulo timzone.
+    utc_vote_date = parse(voteCreatedTime) - datetime.timedelta(hours=3)
     utc_offeset_timedelta = datetime.datetime.utcnow() - datetime.datetime.now()
     # utc_activity_time = parse(
     #    activityTime) + utc_offeset_timedelta + datetime.timedelta(hours=4)
     utc_activity_time = parse(activityTime) + utc_offeset_timedelta
     deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
+    print("vote date: ", utc_vote_date)
+    print("activity date: ", utc_activity_time)
+    print("delta date: ", deltaDate)
     print(utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time)
     return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
@@ -47,7 +67,6 @@ def get_email_sufix(email):
 
 def voter_is_a_mautic_contact(vote):
     if(len(vote["email"].split('-')) > 1):
-        mtc_id = get_mtc_id_from_email(vote["email"])
         email_sufix = get_email_sufix(vote["email"])
         if(email_sufix == 'mautic@mail.com'):
             return True
@@ -76,27 +95,27 @@ def merge_vote_mautic_analytics(contact, vote, _ga):
 def get_analytics_activities(ej_mautic_analytics):
     if merge_data:
         df1 = pd.DataFrame(ej_mautic_analytics)
-        analytics_user_explorer = pd.read_csv('/tmp/analytics.csv',
-                                              dtype={'Client ID': str}, header=5)
-        df2 = analytics_user_explorer.rename(
-            columns={'Client ID': 'analytics_client_id'})
-        df3 = pd.merge(df1, df2, on='analytics_client_id')
+        # analytics_user_explorer = pd.read_csv('/tmp/analytics.csv',
+        #                                      dtype={'Client ID': str}, header=5)
+        # df2 = analytics_user_explorer.rename(
+        #    columns={'Client ID': 'analytics_client_id'})
+        # df3 = pd.merge(df1, df2, on='analytics_client_id')
         analytics_client = analytics.initialize_analyticsreporting()
-        for _id in df3['analytics_client_id']:
+        for _id in df1['analytics_client_id']:
             response = analytics.get_report(analytics_client, _id)
             for session in response['sessions']:
                 for activity in session['activities']:
-                    for voteCreatedTime in df3[df3['analytics_client_id'] == _id]['criado']:
+                    for voteCreatedTime in df1[df1['analytics_client_id'] == _id]['criado']:
                         belongs = vote_belongs_to_activity(
                             voteCreatedTime, activity['activityTime'])
                         if(belongs):
-                            df3.loc[df3['analytics_client_id'] == _id,
+                            df1.loc[df1['analytics_client_id'] == _id,
                                     'analytics_source'] = activity['source']
-                            df3.loc[df3['analytics_client_id'] ==
+                            df1.loc[df1['analytics_client_id'] ==
                                     _id, 'analytics_medium'] = activity['medium']
-                            df3.loc[df3['analytics_client_id'] ==
+                            df1.loc[df1['analytics_client_id'] ==
                                     _id, 'pageview'] = activity['pageview']['pagePath']
-                            df3.to_csv('/tmp/ej_analytics_mautic.csv')
+                            df1.to_csv('/tmp/ej_analytics_mautic.csv')
 
 
 def merge_data(**context):
@@ -119,7 +138,6 @@ def merge_data(**context):
 
 
 t1 = SimpleHttpOperator(
-    start_date=datetime.datetime.now(),
     task_id="request_ej_reports_data",
     http_conn_id=os.getenv("ej_conn_id"),
     endpoint=f'/api/v1/conversations/{os.getenv("CONVERSATION_ID")}/reports?fmt=json&&export=votes',
@@ -132,7 +150,6 @@ t1 = SimpleHttpOperator(
 
 
 t2 = SimpleHttpOperator(
-    start_date=datetime.datetime.now(),
     task_id="request_mautic_data",
     http_conn_id=os.getenv("mautic_conn_id"),
     endpoint='/api/contacts?search=gid:GA',
@@ -145,7 +162,6 @@ t2 = SimpleHttpOperator(
     dag=dag)
 
 t3 = PythonOperator(
-    start_date=datetime.datetime.now(),
     provide_context=True,
     python_callable=merge_data,
     task_id="merge_ej_mautic_data",

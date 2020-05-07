@@ -1,5 +1,6 @@
 """Hello Analytics Reporting API V4."""
 
+from pathlib import Path  # python3 only
 import os
 import argparse
 
@@ -11,7 +12,10 @@ from oauth2client import tools
 import datetime
 
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
+CURRENT_ENV = os.getenv('AIRFLOW_ENV', 'prod')
+env_path = Path('.') / f"/tmp/.{CURRENT_ENV}.env"
+load_dotenv(dotenv_path=env_path)
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
@@ -40,7 +44,8 @@ def initialize_analyticsreporting():
     # If the credentials don't exist or are invalid run through the native client
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
-    storage = file.Storage('.analyticsreporting.dat')
+    storage = file.Storage(
+        f"{os.getenv('AIRFLOW_HOME')}/.analyticsreporting.dat")
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)
@@ -94,15 +99,3 @@ def print_response(response):
                 print('Date range (' + str(i) + ')')
                 for metricHeader, value in zip(metricHeaders, values.get('values')):
                     print(metricHeader.get('name') + ': ' + value)
-
-
-def main():
-
-    analytics = initialize_analyticsreporting()
-    response = get_report(analytics)
-    print(response)
-    # print_response(response)
-
-
-if __name__ == '__main__':
-    main()

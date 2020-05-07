@@ -1,0 +1,10 @@
+FROM apache/airflow
+ENV AIRFLOW_HOME=/home/airflow/
+COPY src /home/airflow/dags/src/
+RUN cp /home/airflow/dags/src/.analyticsreporting.dat /home/airflow/
+WORKDIR  /home/airflow/dags/src/ej
+RUN cp client_secrets.json /tmp/
+RUN cp .*.env /tmp
+RUN cp ../airflow.cfg /home/airflow/
+RUN pip install --user -r requirements.txt
+RUN airflow initdb
