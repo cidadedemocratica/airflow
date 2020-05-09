@@ -59,9 +59,9 @@ def initialize_analyticsreporting():
 
 
 def get_report(analytics, userID):
-    # start from datetime.now - 15 days
+    # start from datetime.now - 60 days
     startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                 datetime.timedelta(days=15)).strftime("%Y-%m-%d")
+                 datetime.timedelta(days=60)).strftime("%Y-%m-%d")
     # include today on report
     endDate = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     return analytics.userActivity().search(

@@ -40,9 +40,9 @@ def vote_belongs_to_activity(voteCreatedTime, activityTime):
     #    activityTime) + utc_offeset_timedelta + datetime.timedelta(hours=4)
     utc_activity_time = parse(activityTime) + utc_offeset_timedelta
     deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
-    print("vote date: ", utc_vote_date)
-    print("activity date: ", utc_activity_time)
-    print("delta date: ", deltaDate)
+    print("utc_vote_date: ", utc_vote_date)
+    print("utc_activity_time: ", utc_activity_time)
+    print("delta_date: ", deltaDate)
     print(utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time)
     return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
@@ -101,7 +101,9 @@ def get_analytics_activities(ej_mautic_analytics):
         #    columns={'Client ID': 'analytics_client_id'})
         # df3 = pd.merge(df1, df2, on='analytics_client_id')
         analytics_client = analytics.initialize_analyticsreporting()
-        for _id in df1['analytics_client_id']:
+        for index, _id in enumerate(df1['analytics_client_id']):
+            print("ID: ", _id)
+            print("ID: ", index)
             response = analytics.get_report(analytics_client, _id)
             for session in response['sessions']:
                 for activity in session['activities']:
