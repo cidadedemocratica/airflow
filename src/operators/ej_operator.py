@@ -80,7 +80,9 @@ class EjOperator(BaseOperator):
         self.df1.loc[self.df1['analytics_client_id'] ==
                      _id, 'analytics_medium'] = activity['medium']
         self.df1.loc[self.df1['analytics_client_id'] ==
-                     _id, 'pageview'] = activity['pageview']['pagePath']
+                     _id, 'analytics_pageview'] = activity['pageview']['pagePath']
+        self.df1.loc[self.df1['analytics_client_id'] ==
+                     _id, 'analytics_campaign'] = activity['campaign']
         self.df1.to_csv('/tmp/ej_analytics_mautic.csv')
 
     def get_sessions_activities(self, sessions):
