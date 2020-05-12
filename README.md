@@ -1,29 +1,39 @@
 # Visão Geral
 
-Repositório contendo um DAG do airflow, responsável por coletar dados
-de voto (via api) na EJ, dados de contato (via api) na plataforma Mautic
+Repositório contendo um [DAG](https://airflow.apache.org/docs/stable/concepts.html) do Airflow, 
+responsável por coletar dados de voto (via api) na EJ, dados de contato (via api) na plataforma Mautic
 e dados de comportamento via api do google analytics. Além de coletar
-os dados, o DAG também consolida tais dados em uma estrutura única, utilizando tanto o identificador gerado pelo Analytics (`ga`), quanto o identificador de um contato no Mautic (`mtc_id`). Quando um voto é feito na EJ, via
-web component de coleta, o usuário criado pela api terá o `mtc_id` compondo
-o campo email. 
+os dados, o DAG também consolida tais dados em uma estrutura única, utilizada posteriormente
+pelo Jupyter, para análises e visualização. O jupyter carrega os dados consolidados peloa
+airflow por meio de um volume Docker, compartilhado entre ambas as ferramentas.
 
-Além do DAG, também mantemos um notebook do Jupyter, responsável por
-gerar as visualizações e correlações dos dados coletados pelo DAG.
+Para que o Airflow possa consolidar os dados das três fontes, precisamos que EJ, 
+Mautic e Analytics estejam configurados para trabalhar em conjunto. No EJ, a coleta tem de ser feita via o 
+[componente de coleta](https://github.com/cidadedemocratica/ej-components). 
+O Mautic deverá ter seu script de tracking configurado
+na mesma página do componente da EJ. O Analytics terá que ter uma property
+configurada para a pagina em que o web component da EJ foi instalado. Todo
+usuário que acessar a página do componente, terá o cookie do Analytics salvo
+no contato do Mautic, que é criado utilizando esse [script de tracking](https://github.com/cidadedemocratica/ej-server/issues/105).
+
+# Configuração
+
+Para que o Operator, responsável por executar a coleta, consiga conectar tanto na EJ quanto no Mautic,
+será preciso criar as conexões definidas no arquivo de `src/ej/.prod.env`. É por meio deste arquivo
+que o Airflow irá ter acesso à informações essenciais para sua correta execução.
+
+- **VIEW_ID**: Identificador da `view` da property configurada no analytics para o projeto. Sem esse identificador o Operator nao irá conseguir requisitar os dados de comportamento;
+- **MAUTIC_TOKEN**: Basic token em base64, composto por username:senha. Essas credenciais devem ser capazes de logar na instância do Mautic;
+- **CONVERSATION_ID**: ID da conversa de onde os votos e comentários serão requisitados;
+- **ej_conn_id**: Nome da conexexão criada no Airflow para requisição na api da EJ;
+- **mautic_conn_id**: Nome da conexexão criada no Airflow para requisição na api do Mautic;
+
 
 # Execução
 
-Para a coleta, precisamos que EJ, Mautic e Analytics estejam configurados
-para trabalhar em conjunto. No EJ, a coleta tem de ser feita via [web 
-component](https://github.com/cidadedemocratica/ej-components) de coleta. O Mautic deverá ter seu script de tracking configurado
-na mesma página do componente da EJ. O Analytics terá que ter uma property
-configurada para a pagina em que o web component da EJ foi instalado. Para
-o cruzamento funcionar, utilizamos um [script customizado](https://github.com/cidadedemocratica/ej-server/issues/105) do Mautic, para
-salvar, no contato do Mautic, o `_ga` do Analytics, via campo customizado.
+Para subir as instâncias do Airflow e do Jupyter, execute:
 
-Para configurar o ambiente apontando para o EJ, Mautic e Analytics configurados localmente, execute:
+	make run env=prod
 
-	make prepare env=local
-	airflow scheduler
-	airflow webserver -p 8080
-
-
+O Airflow possui autenticação por senha, então você irá precisar criar um usuário administrador no
+seu ambiente. O arquivo `src/create_superuser.py`, possui o passo a passo para a criação.
