@@ -139,8 +139,4 @@ class EjOperator(BaseOperator):
                         ej_mautic_analytics.append(compiled_data)
                 else:
                     invalid_mtc_ids.add(mtc_id)
-        print("VALID MTC IDS :", valid_mtc_ids)
-        print("INVALID MTC IDS :", invalid_mtc_ids)
-        print("VALID SIZE :", len(valid_mtc_ids))
-        print("INVALID SIZE :", len(invalid_mtc_ids))
         return ej_mautic_analytics

@@ -1,7 +1,6 @@
 FROM python:3.7
-RUN apt update && apt install -y git
-RUN git clone -b master https://gitlab+deploy-token-170408:mGW4y9QB-x5Yqa6sPGQ5@gitlab.com/pencillabs/ej/airflow_dags.git /home/airflow/dags
-RUN cp /home/airflow/dags/src/.analyticsreporting.dat /airflow
+COPY src /home/airflow/dags/src/
+RUN cp /home/airflow/dags/src/.analyticsreporting.dat /home/airflow/
 WORKDIR  /home/airflow/dags/src/ej
 RUN cp client_secrets.json /tmp/
 RUN cp .*.env /tmp
