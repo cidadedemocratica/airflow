@@ -96,7 +96,6 @@ class EjOperator(BaseOperator):
         return self.df1[self.df1['analytics_client_id'] == _id]["criado"]
 
     def wait_analytics_quota(self, analytics_requests):
-        print("COUNTER :", analytics_requests)
         if(analytics_requests % self.WAIT_ANALYTICS_QUOTA == 0 and analytics_requests > 0):
             print(f"{analytics_requests} analytics clients processed")
             print("WAITING ANALYTICS QUOTA")
