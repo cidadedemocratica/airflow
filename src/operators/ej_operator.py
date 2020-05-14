@@ -1,14 +1,15 @@
-from airflow.models.baseoperator import BaseOperator
-from airflow.utils.decorators import apply_defaults
-from dateutil.parser import *
-from src import analytics_api as analytics
 import os
 import json
 import datetime
-import re
 import pandas as pd
 import time
+from airflow.models.baseoperator import BaseOperator
+from airflow.utils.decorators import apply_defaults
+from dateutil.parser import *
 from airflow.utils.dates import days_ago
+
+from src import analytics_api as analytics
+from src.operators import votes_compiler
 
 
 class EjOperator(BaseOperator):
@@ -19,9 +20,10 @@ class EjOperator(BaseOperator):
         self.analytics = analytics.initialize_analyticsreporting()
         self.df1 = None
         self.WAIT_ANALYTICS_QUOTA = 99
+        self.votes_compiler = votes_compiler.VotesCompiler()
 
     def execute(self, context):
-        ej_mautic_analytics = self.merge_ej_mautic_analytics(context)
+        ej_mautic_analytics = self.merge_votes_mautic_analytics(context)
         self.merge_analytics_activities(ej_mautic_analytics)
         return 'DataFrame with EJ, Mautic and Analytics data, generated on /tmp/ej_analytics_mautic.csv'
 
@@ -31,19 +33,21 @@ class EjOperator(BaseOperator):
         # For a quick fix, we subtract three hours from vote date, to match Sao Paulo timzone.
         utc_vote_date = parse(voteCreatedTime) - datetime.timedelta(hours=3)
         utc_offeset_timedelta = datetime.datetime.utcnow() - datetime.datetime.now()
-        # utc_activity_time = parse(
-        #    activityTime) + utc_offeset_timedelta + datetime.timedelta(hours=4)
         utc_activity_time = parse(activityTime) + utc_offeset_timedelta
         deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
         return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
     def get_ej_votes_from_xcom(self, context):
         return json.loads(context['task_instance'].xcom_pull(
-            task_ids='request_ej_reports_data'))
+            task_ids='request_ej_votes'))
+
+    def get_ej_comments_from_xcom(self, context):
+        return json.loads(context['task_instance'].xcom_pull(
+            task_ids='request_ej_comments'))
 
     def get_mautic_contacts_from_xcom(self, context):
         return json.loads(context['task_instance'].xcom_pull(
-            task_ids='request_mautic_data'))["contacts"]
+            task_ids='request_mautic_contacts'))["contacts"]
 
     def get_mtc_id_from_email(self, email):
         return email.split('-')[0]
@@ -60,19 +64,6 @@ class EjOperator(BaseOperator):
 
     def get_analytics_ga(self, contacts, mtc_id):
         return contacts[mtc_id]["fields"]["core"]["gid"]["value"]
-
-    def parse_ga(self, _ga):
-        return re.sub(r"^GA[0-9]*\.[0-9]*\.*", "", _ga)
-
-    def merge(self, contact, vote, _ga):
-        _gaValue = self.parse_ga(_ga)
-        mautic_email = contact["fields"]["core"]["email"]["value"]
-        first_name = contact["fields"]["core"]["firstname"]["value"]
-        last_name = contact["fields"]["core"]["lastname"]["value"]
-        return {**vote, **{"analytics_client_id": _gaValue,
-                           "mautic_email": mautic_email,
-                           "mautic_first_name": first_name,
-                           "mautic_last_name": last_name}}
 
     def update_df_with_activity(self, activity, _id):
         self.df1.loc[self.df1['analytics_client_id'] == _id,
@@ -119,23 +110,9 @@ class EjOperator(BaseOperator):
                             self.update_df_with_activity(activity, _id)
 
     # Merge, on a single dictionary, ej, mautic and analytics _ga key.
-    def merge_ej_mautic_analytics(self, context):
+    def merge_votes_mautic_analytics(self, context):
         ej_votes = self.get_ej_votes_from_xcom(context)
         mautic_contacts = self.get_mautic_contacts_from_xcom(context)
-        list_of_mautic_contacts_ids = list(mautic_contacts)
-        ej_mautic_analytics = []
-        valid_mtc_ids = set({})
-        invalid_mtc_ids = set({})
-        for vote in ej_votes:
-            if(self.voter_is_a_mautic_contact(vote)):
-                mtc_id = self.get_mtc_id_from_email(vote["email"])
-                if(mtc_id in list_of_mautic_contacts_ids):
-                    valid_mtc_ids.add(mtc_id)
-                    _ga = self.get_analytics_ga(mautic_contacts, mtc_id)
-                    if(_ga):
-                        compiled_data = self.merge(
-                            mautic_contacts[mtc_id], vote, _ga)
-                        ej_mautic_analytics.append(compiled_data)
-                else:
-                    invalid_mtc_ids.add(mtc_id)
-        return ej_mautic_analytics
+        ej_comments = self.get_ej_comments_from_xcom(context)
+        compiled_votes = self.votes_compiler.compile(ej_votes, mautic_contacts)
+        return compiled_votes
