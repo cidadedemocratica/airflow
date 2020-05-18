@@ -4,7 +4,7 @@ Repositório contendo um [DAG](https://airflow.apache.org/docs/stable/concepts.h
 responsável por coletar dados de voto (via api) na EJ, dados de contato (via api) na plataforma Mautic
 e dados de comportamento via api do google analytics. Além de coletar
 os dados, o DAG também consolida tais dados em uma estrutura única, utilizada posteriormente
-pelo Jupyter, para análises e visualização. O jupyter carrega os dados consolidados peloa
+pelo Jupyter, para análises e visualização. O jupyter carrega os dados consolidados pelo
 airflow por meio de um volume Docker, compartilhado entre ambas as ferramentas.
 
 Para que o Airflow possa consolidar os dados das três fontes, precisamos que EJ, 
@@ -15,6 +15,9 @@ na mesma página do componente da EJ. O Analytics terá que ter uma property
 configurada para a pagina em que o web component da EJ foi instalado. Todo
 usuário que acessar a página do componente, terá o cookie do Analytics salvo
 no contato do Mautic, que é criado utilizando esse [script de tracking](https://github.com/cidadedemocratica/ej-server/issues/105).
+
+
+![](docs/pipeline_de_dados.png)
 
 # Configuração
 

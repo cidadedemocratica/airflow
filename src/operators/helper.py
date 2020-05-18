@@ -5,8 +5,8 @@ import time
 class OperatorHelper():
 
     def __init__(self):
-        self.WAIT_ANALYTICS_QUOTA = 99
-        self.TIME_TO_WAIT_ANALYTICS_QUOTA = 180
+        self.MAX_REQUESTS_PER_TURN = 99
+        self.TIME_TO_WAIT_ANALYTICS_QUOTA = 300
 
     def parse_ga(self, _ga):
         return re.sub(r"^GA[0-9]*\.[0-9]*\.*", "", _ga)
@@ -38,7 +38,7 @@ class OperatorHelper():
         return activities
 
     def wait_analytics_quota(self, analytics_requests, data_type):
-        if(analytics_requests % self.WAIT_ANALYTICS_QUOTA == 0 and analytics_requests > 0):
+        if(analytics_requests % self.MAX_REQUESTS_PER_TURN == 0 and analytics_requests > 0):
             print(f"{analytics_requests} analytics clients processed for {data_type}")
             print("WAITING ANALYTICS QUOTA")
             time.sleep(self.TIME_TO_WAIT_ANALYTICS_QUOTA)

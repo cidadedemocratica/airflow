@@ -32,7 +32,7 @@ class EjOperator(BaseOperator):
             ej_comments, mautic_contacts)
 
         self.votes_compiler.merge_with_analytics(compiled_votes)
-        self.votes_compiler.merge_with_analytics(compiled_comments)
+        self.comments_compiler.merge_with_analytics(compiled_comments)
         return 'DataFrame with EJ, Mautic and Analytics data, generated on /tmp/ej_analytics_mautic.csv'
 
     def get_ej_votes_from_xcom(self, context):

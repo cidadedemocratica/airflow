@@ -63,6 +63,6 @@ class CommentsCompiler():
         utc_comment_date = parse(commentCreatedTime) - \
             datetime.timedelta(hours=3)
         utc_offeset_timedelta = datetime.datetime.utcnow() - datetime.datetime.now()
-        ultc_activity_time = parse(activityTime) + utc_offeset_timedelta
+        utc_activity_time = parse(activityTime) + utc_offeset_timedelta
         deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
         return utc_comment_date < deltaDate and utc_comment_date >= utc_activity_time
