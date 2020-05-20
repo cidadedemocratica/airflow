@@ -27,7 +27,7 @@ class OperatorHelper():
     def get_mtc_id_from_email(self, email):
         return email.split('-')[0]
 
-    def get_analytics_ga(self, contacts, mtc_id):
+    def get_contact_ga(self, contacts, mtc_id):
         return contacts[mtc_id]["fields"]["core"]["gid"]["value"]
 
     def get_sessions_activities(self, sessions):

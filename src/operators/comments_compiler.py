@@ -19,7 +19,7 @@ class CommentsCompiler():
             if(self.commentator_is_a_mautic_contact(comment)):
                 mtc_id = self.helper.get_mtc_id_from_email(comment["autor"])
                 if(mtc_id in list_of_mautic_contacts_ids):
-                    _ga = self.helper.get_analytics_ga(mautic_contacts, mtc_id)
+                    _ga = self.helper.get_contact_ga(mautic_contacts, mtc_id)
                     if(_ga):
                         compiled_data = self.helper.merge(
                             mautic_contacts[mtc_id], comment, _ga)
