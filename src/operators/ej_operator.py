@@ -26,16 +26,17 @@ class EjOperator(BaseOperator):
 
     def execute(self, context):
         ej_votes = self.get_ej_votes_from_xcom(context)
-        self.store_ej_data(ej_votes)
         mautic_contacts = self.get_mautic_contacts_from_xcom(context)
         ej_comments = self.get_ej_comments_from_xcom(context)
+        self.write_data_to_file(ej_votes, "votes")
+        self.write_data_to_file(ej_comments, "comments")
         compiled_votes = self.votes_compiler.compile(ej_votes, mautic_contacts)
         compiled_comments = self.comments_compiler.compile(
             ej_comments, mautic_contacts)
 
         self.votes_compiler.merge_with_analytics(compiled_votes)
         self.comments_compiler.merge_with_analytics(compiled_comments)
-        return 'DataFrame with EJ, Mautic and Analytics data, generated on /tmp/ej_analytics_mautic.csv'
+        return 'DataFrame with EJ, Mautic and Analytics data, generated on /tmp/comments_analytics_mautic.csv and /tmp/votes_analytics_mautic.csv '
 
     def get_ej_votes_from_xcom(self, context):
         return json.loads(context['task_instance'].xcom_pull(
@@ -49,6 +50,7 @@ class EjOperator(BaseOperator):
         return json.loads(context['task_instance'].xcom_pull(
             task_ids='request_mautic_contacts'))["contacts"]
 
-    def store_ej_data(self, data):
-        with open('/tmp/ej_only.json', 'w') as f:
+    def write_data_to_file(self, data, data_type):
+        file_name = f"{data_type}_only.json"
+        with open(f'/tmp/{file_name}', 'w') as f:
             f.write(json.dumps(data))
