@@ -5,6 +5,7 @@ services:
     image: jupyter/datascience-notebook
     ports:
       - "8888:8888"
+      - "8050:8050"
     volumes:
       - ./src:/home/jovyan/work/
       - analysisdata:/tmp/airflow/
