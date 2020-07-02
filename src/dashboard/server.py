@@ -15,19 +15,33 @@ def generate_table(dataframe, max_rows=10):
     ths = []
     trs = []
     for col in dataframe.columns:
-        ths.append(html.Th(col))
+        if((col != 'concorda') and (col != 'discorda') and (col != 'pulados')):
+            ths.append(html.Th(col))
     for index in range(min(len(dataframe), max_rows)):
         tds = []
         for col in dataframe.columns:
             if(col == "compilado"):
-                bar = html.Div(style={'border-style': 'solid', 'border-color': 'black', 'width': '100px', 'height': 30, 'display': 'flex'}, children=[html.Div(style={'background-color': 'green', 'width': dataframe.iloc[index]['concorda'], 'height': 30}), html.Div(style={'background-color': 'red', 'width': dataframe.iloc[index]['discorda'], 'height': 30}), html.Div(style={'background-color': 'yellow', 'width': dataframe.iloc[index]['pulados'], 'height': 30})])
+                bar = html.Div(
+                    style={},
+                    children=[
+                        html.Div(style={'border-style': 'solid', 'border-color': 'black', 'width': '100px', 'height': 30, 'display': 'flex'}, children=[
+                            html.Div(style={'background-color': 'green', 'width': dataframe.iloc[index]['concorda'], 'height': 30}),
+                            html.Div(style={'background-color': 'red', 'width': dataframe.iloc[index]['discorda'], 'height': 30}),
+                            html.Div(style={'background-color': 'yellow', 'width': dataframe.iloc[index]['pulados'], 'height': 30})
+                        ]),
+                        html.Div(style={}, children=[
+                            html.Span(style={'color': 'green', 'font-size': '11px', 'margin-right': '5px'}, children=str(round(dataframe.iloc[index]['concorda'])) + '%'),
+                            html.Span(style={'color': 'red', 'font-size': '11px', 'margin-right': '5px'}, children=str(round(dataframe.iloc[index]['discorda'])) + '%'),
+                            html.Span(style={'color': 'yellow', 'font-size': '11px', 'margin-right': '5px'}, children=str(round(dataframe.iloc[index]['pulados'])) + '%'),
+                        ]),
+                    ],
+                )
                 tds.append(html.Td(bar))
-            else:
+            elif((col != "concorda") and (col != "discorda") and (col != "pulados")):
                 tds.append(html.Td(dataframe.iloc[index][col]))
         trs.append(html.Tr(tds))
 
 
-    print(trs)
     return html.Table([
         html.Thead(
             html.Tr(ths)
