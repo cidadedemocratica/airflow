@@ -1,63 +1,127 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.graph_objects as go
 import dash_html_components as html
-
-ej_comments_all = pd.read_json('/tmp/airflow/comments_only.json')
-
-ej_comments = pd.DataFrame(data=ej_comments_all, columns=['comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
-ej_comments['concorda'] = ej_comments['concorda'].map(lambda x: x * 100)
-ej_comments['discorda'] = ej_comments['discorda'].map(lambda x: x * 100)
-ej_comments['pulados'] = ej_comments['pulados'].map(lambda x: x * 100)
-ej_comments['convergência'] = ej_comments['convergência'].map(lambda x: round(x * 100))
-ej_comments['geral'] = ''
-for index,value in enumerate(ej_comments['concorda']):
-    ej_comments['geral'][index] = [ej_comments['concorda'][index], ej_comments['discorda'][index], ej_comments['pulados'][index]]
+import dash_core_components as dcc
 
 
+class Comments():
 
-def generate_table_body(dataframe):
-    trs = []
-    for index in range(len(dataframe)):
-        tds = []
-        for col in dataframe.columns:
-            if(col == "convergência"):
-                tds.append(html.Td(str(dataframe.iloc[index][col]) + '%'))
-            if(col == "geral"):
-                bar = html.Div(
-                    style={},
-                    children=[
-                        html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
-                            html.Div(style={'backgroundColor': 'green', 'width': dataframe.iloc[index]['concorda'], 'height': 20}),
-                            html.Div(style={'backgroundColor': 'red', 'width': dataframe.iloc[index]['discorda'], 'height': 20}),
-                            html.Div(style={'backgroundColor': 'yellow', 'width': dataframe.iloc[index]['pulados'], 'height': 20})
-                        ]),
-                        html.Div(style={}, children=[
-                            html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(round(dataframe.iloc[index]['concorda'])) + '%'),
-                            html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(round(dataframe.iloc[index]['discorda'])) + '%'),
-                            html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(round(dataframe.iloc[index]['pulados'])) + '%'),
-                        ]),
-                    ],
-                )
-                tds.append(html.Td(bar))
-            elif((col != "concorda") and (col != "discorda") and (col != "pulados") and (col != 'participação') and (col != 'convergência')):
-                tds.append(html.Td(dataframe.iloc[index][col]))
-        trs.append(html.Tr(tds))
-    return trs;
+    def __init__(self):
+        self.df = None
+        self.order_options = ['comentário_id',
+                              'concorda', 'discorda', 'pulados']
+        self.get_data()
 
-def generate_table(dataframe):
-    ths = []
-    trs = []
-    for col in dataframe.columns:
-        if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
-            ths.append(html.Th(col))
-    trs = generate_table_body(dataframe)
-    return html.Table([
+    def get_data(self):
+        comments_df = pd.read_json('/tmp/airflow/comments_only.json')
+        self.df = pd.DataFrame(data=comments_df, columns=[
+            'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
+        self.df['concorda'] = self.df['concorda'].map(
+            lambda x: x * 100)
+        self.df['discorda'] = self.df['discorda'].map(
+            lambda x: x * 100)
+        self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
+        self.df['convergência'] = self.df['convergência'].map(
+            lambda x: round(x * 100))
+        self.df['geral'] = ''
+        for index, value in enumerate(self.df['concorda']):
+            self.df['geral'][index] = [self.df['concorda'][index],
+                                       self.df['discorda'][index], self.df['pulados'][index]]
+
+    def generate_table(self):
+        ths = []
+        for col in self.df.columns:
+            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
+                ths.append(html.Th(col))
+        return html.Table([
             html.Thead(
                 html.Tr(ths)
             ),
             html.Tbody(
-                trs, id="table_body"
+                self.generate_table_body(), id="table_body"
             )
+        ])
+
+    def generate_table_body(self, new_df={}):
+        df = None
+        try:
+            new_df.info()
+            df = new_df
+        except:
+            df = self.df
+        trs = []
+        for index in range(len(df)):
+            tds = []
+            for col in df.columns:
+                if(col == "convergência"):
+                    tds.append(
+                        html.Td(str(df.iloc[index][col]) + '%'))
+                if(col == "geral"):
+                    bar = html.Div(
+                        style={},
+                        children=[
+                            html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
+                                html.Div(style={
+                                    'backgroundColor': 'green', 'width': df.iloc[index]['concorda'], 'height': 20}),
+                                html.Div(style={
+                                    'backgroundColor': 'red', 'width': df.iloc[index]['discorda'], 'height': 20}),
+                                html.Div(style={
+                                    'backgroundColor': 'yellow', 'width': df.iloc[index]['pulados'], 'height': 20})
+                            ]),
+                            html.Div(style={}, children=[
+                                html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                                    round(df.iloc[index]['concorda'])) + '%'),
+                                html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                                    round(df.iloc[index]['discorda'])) + '%'),
+                                html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                                    round(df.iloc[index]['pulados'])) + '%'),
+                            ]),
+                        ],
+                    )
+                    tds.append(html.Td(bar))
+                elif((col != "concorda") and (col != "discorda") and (col != "pulados") and (col != 'participação') and (col != 'convergência')):
+                    tds.append(html.Td(df.iloc[index][col]))
+            trs.append(html.Tr(tds))
+        return trs
+
+    def _get_table(self):
+        return html.Div(
+            children=[
+                html.Div(style={"display": "flex", "width": "20%"}, children=[
+                    html.Span(style={"marginRight": 8},
+                              children="Participação acima de:"),
+                    dcc.Input(
+                        id='participation',
+                        value='50',
+                        style={"flexGrow": 1}
+                    ),
+                ]),
+                html.Div(style={"display": "flex", "width": "30%"}, children=[
+                    html.Span(style={"marginRight": 8},
+                              children="Ordenar por:"),
+                    dcc.Dropdown(
+                        id='_filter',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.order_options],
+                        value='Fertility rate, total (births per woman)',
+                        style={"flexGrow": 1}
+                    ),
+                ]),
+                self.generate_table()
+            ])
+
+    def get_html(self):
+        return html.Div(style={'background-color': 'white', 'marginTop': '15px'},
+                        children=[
+            html.Div(style={"textAlign": "center", "backgroundColor": "#042a46", "color": "white", "height": "40px"},
+                     children=[
+                         html.Div(style={"position": "relative", "top": "20%"},
+                                  children=['Votos e participação em todos os comentários, excluíndo os comentários que foram rejeitados para moderação.'])
+            ]
+            ),
+            html.Div(style={'width': '90%', 'margin': '20px auto'}, children=[
+                self._get_table()
+            ])
         ])
