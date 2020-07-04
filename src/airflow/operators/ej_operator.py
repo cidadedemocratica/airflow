@@ -9,8 +9,8 @@ from dateutil.parser import *
 from airflow.utils.dates import days_ago
 import json
 
-from src.operators import votes_compiler
-from src.operators import comments_compiler
+from src.airflow.operators import votes_compiler
+from src.airflow.operators import comments_compiler
 from src import analytics_api as analytics
 
 

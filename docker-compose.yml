@@ -22,7 +22,7 @@ services:
       - airflowdata:/home/airflow/
     ports:
       - "8080:8080"
-    entrypoint: "sh /home/airflow/dags/src/ej/airflow-run.sh" 
+    entrypoint: "sh /home/airflow/dags/src/airflow/airflow-run.sh" 
 volumes:
   analysisdata:
   airflowdata:

@@ -9,7 +9,7 @@ import datetime
 import re
 import pandas as pd
 from airflow.utils.dates import days_ago
-from src.operators import EjOperator
+from src.airflow.operators import EjOperator
 
 from dotenv import load_dotenv
 from pathlib import Path
