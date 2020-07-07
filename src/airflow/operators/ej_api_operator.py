@@ -8,7 +8,6 @@ import requests
 
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from airflow.utils.dates import days_ago
 from airflow.hooks.base_hook import BaseHook
 
 

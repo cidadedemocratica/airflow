@@ -10,7 +10,7 @@ import re
 import pandas as pd
 from airflow.utils.dates import days_ago
 from src.airflow.operators import EjOperator
-from src.airflow.operators import EjApiOperator
+from src.airflow.operators import EjApiOperator, MauticApiOperator
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -45,4 +45,9 @@ t2 = EjApiOperator(
     log_response=True,
     dag=dag)
 
-[t1, t2]
+t3 = MauticApiOperator(
+    task_id="merge_votes_and_contacts",
+    log_response=True,
+    dag=dag)
+
+[t1, t2] >> t3

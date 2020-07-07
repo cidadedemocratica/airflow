@@ -11,21 +11,22 @@ class OperatorHelper():
     def parse_ga(self, _ga):
         return re.sub(r"^GA[0-9]*\.[0-9]*\.*", "", _ga)
 
-    def merge(self, contact, data, _ga):
-        _gaValue = self.parse_ga(_ga)
-        mautic_email = contact["fields"]["core"]["email"]["value"]
-        first_name = contact["fields"]["core"]["firstname"]["value"]
-        last_name = contact["fields"]["core"]["lastname"]["value"]
-        return {**data, **{"analytics_client_id": _gaValue,
-                           "mautic_email": mautic_email,
-                           "mautic_first_name": first_name,
-                           "mautic_last_name": last_name}}
+    def merge(self, df, contact, email):
+        mautic_email = contact["fields"]["all"]["email"]
+        first_name = contact["fields"]["all"]["firstname"]
+        last_name = contact["fields"]["all"]["lastname"]
+        df.loc[df['email'] == email, 'mautic_email'] = mautic_email
+        df.loc[df['email'] == email, 'mautic_first_name'] = first_name
+        df.loc[df['email'] == email, 'mautic_last_name'] = last_name
+        return df
 
     def get_email_sufix(self, email):
         return email.split('-')[1]
 
     def get_mtc_id_from_email(self, email):
-        return email.split('-')[0]
+        if(len(email.split('-')) > 1 and email.split('-')[1] == 'mautic@mail.com'):
+            return email.split('-')[0]
+        return ""
 
     def get_contact_ga(self, contacts, mtc_id):
         return contacts[mtc_id]["fields"]["core"]["gid"]["value"]
