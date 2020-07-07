@@ -11,8 +11,8 @@ class App():
     def __init__(self):
         self.votes = Votes()
         self.comments = Comments()
-        self.votes.get_data()
-        self.comments.get_data()
+        self.votes.read()
+        self.comments.read()
         self.app = dash.Dash(
             __name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 

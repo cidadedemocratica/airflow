@@ -12,9 +12,8 @@ class Comments():
         self.df = None
         self.order_options = ['comentário_id',
                               'concorda', 'discorda', 'pulados']
-        self.get_data()
 
-    def get_data(self):
+    def read(self):
         comments_df = pd.read_json('/tmp/airflow/comments_only.json')
         self.df = pd.DataFrame(data=comments_df, columns=[
             'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
