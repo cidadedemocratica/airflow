@@ -10,6 +10,7 @@ import re
 import pandas as pd
 from airflow.utils.dates import days_ago
 from src.airflow.operators import EjOperator
+from src.airflow.operators import EjApiOperator
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -30,45 +31,18 @@ default_args = {
 
 dag = DAG('osf_pipeline', default_args=default_args)
 
-t1 = SimpleHttpOperator(
-    task_id="request_ej_votes",
-    http_conn_id=os.getenv("ej_conn_id"),
-    endpoint=f'/api/v1/conversations/{os.getenv("CONVERSATION_ID")}/reports?fmt=json&&export=votes',
-    method="GET",
-    headers={"Accept": "text/csv"},
-    response_check=lambda response: True if response.content else False,
+t1 = EjApiOperator(
+    task_id="request_conversation_votes",
+    conversation_id=56,
+    data_type="votes",
     log_response=True,
-    xcom_push=True,
     dag=dag)
 
-t2 = SimpleHttpOperator(
-    task_id="request_ej_comments",
-    http_conn_id=os.getenv("ej_conn_id"),
-    endpoint=f'/api/v1/conversations/{os.getenv("CONVERSATION_ID")}/reports?fmt=json&&export=comments',
-    method="GET",
-    headers={"Accept": "text/csv"},
-    response_check=lambda response: True if response.content else False,
+t2 = EjApiOperator(
+    task_id="request_conversation_comments",
+    conversation_id=56,
+    data_type="comments",
     log_response=True,
-    xcom_push=True,
     dag=dag)
 
-
-t3 = SimpleHttpOperator(
-    task_id="request_mautic_contacts",
-    http_conn_id=os.getenv("mautic_conn_id"),
-    endpoint='/api/contacts?search=gid:GA&limit=300',
-    method="GET",
-    headers={
-        "Authorization": f'Basic {os.getenv("MAUTIC_TOKEN")}'},
-    response_check=lambda response: True if response.content else False,
-    log_response=True,
-    xcom_push=True,
-    dag=dag)
-
-t4 = EjOperator(
-    provide_context=True,
-    task_id="merge_ej_mautic_analytics",
-    dag=dag
-)
-
-[t1, t2, t3] >> t4
+[t1, t2]
