@@ -15,9 +15,12 @@ class OperatorHelper():
         mautic_email = contact["fields"]["all"]["email"]
         first_name = contact["fields"]["all"]["firstname"]
         last_name = contact["fields"]["all"]["lastname"]
-        df.loc[df['email'] == email, 'mautic_email'] = mautic_email
-        df.loc[df['email'] == email, 'mautic_first_name'] = first_name
-        df.loc[df['email'] == email, 'mautic_last_name'] = last_name
+        gid = contact["fields"]["all"]["gid"]
+        df.loc[df['email'] == email, 'mtc_email'] = mautic_email
+        df.loc[df['email'] == email, 'mtc_first_name'] = first_name
+        df.loc[df['email'] == email, 'mtc_last_name'] = last_name
+        if(gid):
+            df.loc[df['email'] == email, 'gid'] = gid
         return df
 
     def get_email_sufix(self, email):
@@ -44,13 +47,13 @@ class OperatorHelper():
             print("WAITING ANALYTICS QUOTA")
             time.sleep(self.TIME_TO_WAIT_ANALYTICS_QUOTA)
 
-    def update_df_with_activity(self, df, activity, _id):
-        df.loc[df['analytics_client_id'] == _id,
+    def update_df_with_activity(self, df, activity, voteTime, gid):
+        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
                'analytics_source'] = activity['source']
-        df.loc[df['analytics_client_id'] ==
-               _id, 'analytics_medium'] = activity['medium']
-        df.loc[df['analytics_client_id'] ==
-               _id, 'analytics_pageview'] = activity['pageview']['pagePath']
-        df.loc[df['analytics_client_id'] ==
-               _id, 'analytics_campaign'] = activity['campaign']
+        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+               'analytics_medium'] = activity['medium']
+        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+               'analytics_pageview'] = activity['pageview']['pagePath']
+        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+               'analytics_campaign'] = activity['campaign']
         return df

@@ -32,9 +32,10 @@ class MauticApiOperator(BaseOperator):
 
     def merge_votes_and_contacts(self):
         votes_with_mautic = pd.DataFrame(self.votes_df)
-        votes_with_mautic['mautic_email'] = ''
-        votes_with_mautic['mautic_first_name'] = ''
-        votes_with_mautic['mautic_last_name'] = ''
+        votes_with_mautic['mtc_email'] = ''
+        votes_with_mautic['mtc_first_name'] = ''
+        votes_with_mautic['mtc_last_name'] = ''
+        votes_with_mautic['gid'] = ''
         uniq_emails = votes_with_mautic.groupby(
             'email').count().reset_index(level=0)
         print(

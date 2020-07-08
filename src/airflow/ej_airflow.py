@@ -1,19 +1,17 @@
-from airflow.models import DAG
-from airflow.operators.http_operator import SimpleHttpOperator
-from airflow.operators.python_operator import PythonOperator
-from dateutil.parser import *
-from src import analytics_api as analytics
 import os
 import json
 import datetime
 import re
 import pandas as pd
-from airflow.utils.dates import days_ago
-from src.airflow.operators import EjOperator
-from src.airflow.operators import EjApiOperator, MauticApiOperator
 
+from airflow.utils.dates import days_ago
+from src.airflow.operators import EjApiOperator, MauticApiOperator, AnalyticsApiOperator
+from airflow.models import DAG
+from dateutil.parser import *
+from src import analytics_api as analytics
 from dotenv import load_dotenv
 from pathlib import Path
+
 CURRENT_ENV = os.getenv('AIRFLOW_ENV', 'prod')
 env_path = Path('.') / f"/tmp/.{CURRENT_ENV}.env"
 load_dotenv(dotenv_path=env_path)
@@ -50,4 +48,10 @@ t3 = MauticApiOperator(
     log_response=True,
     dag=dag)
 
-[t1, t2] >> t3
+t4 = AnalyticsApiOperator(
+    task_id="merge_with_analytics",
+    log_response=True,
+    dag=dag)
+
+
+[t1, t2] >> t3 >> t4

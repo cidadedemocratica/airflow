@@ -1,15 +1,16 @@
 """Hello Analytics Reporting API V4."""
 
-from pathlib import Path  # python3 only
 import os
 import argparse
-
-from apiclient.discovery import build
+import re
 import httplib2
+import datetime
+
+from pathlib import Path  # python3 only
+from apiclient.discovery import build
 from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
-import datetime
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -20,7 +21,8 @@ load_dotenv(dotenv_path=env_path)
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
 CLIENT_SECRETS_PATH = '/tmp/client_secrets.json'
-VIEW_ID = os.getenv("VIEW_ID")
+#VIEW_ID = os.getenv("VIEW_ID")
+VIEW_ID = "215248741"
 
 
 def initialize_analyticsreporting():
@@ -61,15 +63,16 @@ def initialize_analyticsreporting():
 def get_report(analytics, userID):
     # start from datetime.now - 60 days
     startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                 datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+                 datetime.timedelta(days=90)).strftime("%Y-%m-%d")
     # include today on report
     endDate = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+
     return analytics.userActivity().search(
         body={
             "viewId": VIEW_ID,
             "user": {
                 "type": "CLIENT_ID",
-                "userId": userID
+                "userId": re.sub(r'^[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.', '', userID)
             },
             "dateRange": {
                 "startDate": startDate,
