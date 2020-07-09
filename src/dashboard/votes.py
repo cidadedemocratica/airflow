@@ -19,6 +19,12 @@ class Votes():
             .reset_index(level=0) \
             .reset_index(level=0) \
             .sort_values(by='criado', ascending=False)
+        self.utm_source_options = df['analytics_source'].value_counts(
+        ).keys()
+        self.utm_medium_options = df['analytics_medium'].value_counts(
+        ).keys()
+        self.utm_campaign_options = df['analytics_campaign'].value_counts(
+        ).keys()
 
     def get_figure(self, new_df):
         df = None
@@ -68,30 +74,42 @@ class Votes():
     def _get_filters(self):
         return html.Div(children=[
             html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(children=[
+                     children=[html.Div(style={'display': 'flex'}, children=[
                          html.Span(style={"marginRight": 8},
                                    children="Fonte da campanha (utm_source):"),
-                         dcc.Input(
-                             id='analytics_campaign_source'
-                         )
+                         dcc.Dropdown(
+                             id='analytics_campaign_source',
+                             options=[{'label': i, 'value': i}
+                                      for i in self.utm_source_options],
+                             value='',
+                             style={"flexGrow": 1}
+                         ),
                      ])
             ]),
             html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(children=[
+                     children=[html.Div(style={'display': 'flex'}, children=[
                          html.Span(style={"marginRight": 8},
                                    children="Meio da campanha (utm_medium):"),
-                         dcc.Input(
-                             id='analytics_campaign_medium'
-                         )
+                         dcc.Dropdown(
+                             id='analytics_campaign_medium',
+                             options=[{'label': i, 'value': i}
+                                      for i in self.utm_medium_options],
+                             value='',
+                             style={"flexGrow": 1}
+                         ),
                      ])
             ]),
             html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(children=[
+                     children=[html.Div(style={'display': 'flex'}, children=[
                          html.Span(style={"marginRight": 8},
                                    children="Nome da campanha (utm_campaign):"),
-                         dcc.Input(
-                             id='analytics_campaign_name'
-                         )
+                         dcc.Dropdown(
+                             id='analytics_campaign_name',
+                             options=[{'label': i, 'value': i}
+                                      for i in self.utm_campaign_options],
+                             value='',
+                             style={"flexGrow": 1}
+                         ),
                      ])
             ]),
         ],
