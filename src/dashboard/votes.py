@@ -10,22 +10,35 @@ from mautic_sdk import MauticSdk
 class Votes():
 
     def read(self):
-        df = pd.read_json('/tmp/airflow/votes.json')
-        self.df = df.groupby('email').count().reset_index(
-            level=0).sort_values(by='criado', ascending=False)
+        df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
+        self.df = df.groupby(['email',
+                              'analytics_campaign',
+                              'analytics_source',
+                              'analytics_medium']) \
+            .count().reset_index(level=0).reset_index(level=0) \
+            .reset_index(level=0) \
+            .reset_index(level=0) \
+            .sort_values(by='criado', ascending=False)
 
-    def _get_figure(self):
+    def get_figure(self, new_df):
+        df = None
+        try:
+            new_df.head(1)
+            df = new_df
+        except:
+            df = self.df
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
-                        y=self.df['criado'], boxpoints='all',
+                        y=df['criado'], boxpoints='all',
                         marker_color='#30bfd3'),
             layout={'title': {'text': '', 'x': 0.5, 'font': {'size': 20, 'color': '#ff3e72', 'family': 'Times New Roman'}}, 'legend': {'font': {'size': 15, 'color': '#000'}, 'y': 0.8}, })
         fig.update_layout(yaxis_zeroline=False)
-        return fig
+        return html.Div(children=[dcc.Graph(figure=fig)])
 
-    def get_html(self):
+    def get_html(self, new_df=None):
+
         return html.Div(
-            style={'width': '49%'},
+            style={'backgroundColor': 'white'},
             children=[
                 html.Div(
                     style={"textAlign": "center",
@@ -37,9 +50,49 @@ class Votes():
                         children=['Aquisição Qualificada'])]
                 ),
                 html.Div(
-                    children=[html.Div(
-                        style={'flexGrow': 1, 'background-color': 'white'},
-                        children=[dcc.Graph(figure=self._get_figure())]),
+                    children=[
+                        self._get_filters(),
+                        html.Div(
+                            style={'flexGrow': 1,
+                                   'background-color': 'white'},
+                            children=[
+                                html.Div(id="analytics_filters",
+                                         children=[self.get_figure(new_df)]
+                                         )
+                            ]
+                        ),
                     ]
                 )
             ])
+
+    def _get_filters(self):
+        return html.Div(children=[
+            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
+                     children=[html.Div(children=[
+                         html.Span(style={"marginRight": 8},
+                                   children="Fonte da campanha (utm_source):"),
+                         dcc.Input(
+                             id='analytics_campaign_source'
+                         )
+                     ])
+            ]),
+            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
+                     children=[html.Div(children=[
+                         html.Span(style={"marginRight": 8},
+                                   children="Meio da campanha (utm_medium):"),
+                         dcc.Input(
+                             id='analytics_campaign_medium'
+                         )
+                     ])
+            ]),
+            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
+                     children=[html.Div(children=[
+                         html.Span(style={"marginRight": 8},
+                                   children="Nome da campanha (utm_campaign):"),
+                         dcc.Input(
+                             id='analytics_campaign_name'
+                         )
+                     ])
+            ]),
+        ],
+        )

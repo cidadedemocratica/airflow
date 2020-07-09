@@ -21,9 +21,8 @@ class App():
             html.Div(style={'background': 'white', 'height': '5rem', 'fontSize': '3rem'},
                      children="Dashboard"),
             html.Div(style={"width": "90%", "margin": "30px auto", 'background-color': '#DBDDDF'}, children=[
-                html.Div(style={'display': 'flex', 'justifyContent': 'space-between'}, children=[
+                html.Div(style={}, children=[
                     self.votes.get_html(),
-                    self.votes.get_html()
                 ]),
                 self.comments.get_html()
             ])])
@@ -40,3 +39,26 @@ class App():
                 df = df.sort_values(by=_filter, ascending=False)
                 return self.comments.generate_table_body(df)
             return self.comments.generate_table_body(df)
+
+        @self.app.callback(
+            Output("analytics_filters", 'children'),
+            [Input('analytics_campaign_source', 'value'),
+             Input('analytics_campaign_name', 'value'),
+             Input('analytics_campaign_medium', 'value')])
+        def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium):
+            df = self.votes.df
+            if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
+                print(df['analytics_source'])
+                df = df[df['analytics_source'] ==
+                        analytics_campaign_source]
+
+            if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
+                print(df['analytics_medium'])
+                df = df[df['analytics_medium'] ==
+                        analytics_campaign_medium]
+
+            if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
+                print(df['analytics_campaign'])
+                df = df[df['analytics_campaign'] ==
+                        analytics_campaign_name]
+            return self.votes.get_figure(df)
