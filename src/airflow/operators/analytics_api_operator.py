@@ -49,7 +49,7 @@ class AnalyticsApiOperator(BaseOperator):
             if(not gid or gid == '1'):
                 continue
             self.helper.wait_analytics_quota(counter, "votes")
-            report = analytics.get_report(
+            report = analytics.get_user_activity(
                 self.analytics_client, gid)
             activities = self.helper.get_sessions_activities(
                 report['sessions'])

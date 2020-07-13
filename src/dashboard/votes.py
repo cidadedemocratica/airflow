@@ -4,27 +4,17 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
-from mautic_sdk import MauticSdk
+
+from dateutil.parser import *
+from dateutil.tz import *
+import datetime
+from datetime import date
 
 
 class Votes():
 
     def read(self):
-        df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
-        self.df = df.groupby(['email',
-                              'analytics_campaign',
-                              'analytics_source',
-                              'analytics_medium']) \
-            .count().reset_index(level=0).reset_index(level=0) \
-            .reset_index(level=0) \
-            .reset_index(level=0) \
-            .sort_values(by='criado', ascending=False)
-        self.utm_source_options = df['analytics_source'].value_counts(
-        ).keys()
-        self.utm_medium_options = df['analytics_medium'].value_counts(
-        ).keys()
-        self.utm_campaign_options = df['analytics_campaign'].value_counts(
-        ).keys()
+        self.df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
 
     def get_figure(self, new_df):
         df = None
@@ -33,6 +23,7 @@ class Votes():
             df = new_df
         except:
             df = self.df
+        df = self.groupData(new_df)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
@@ -42,7 +33,6 @@ class Votes():
         return html.Div(children=[dcc.Graph(figure=fig)])
 
     def get_html(self, new_df=None):
-
         return html.Div(
             style={'backgroundColor': 'white'},
             children=[
@@ -56,10 +46,11 @@ class Votes():
                         children=['Aquisição Qualificada'])]
                 ),
                 html.Div(
+                    style={'display': 'flex'},
                     children=[
-                        self._get_filters(),
+                        self._get_filters(new_df),
                         html.Div(
-                            style={'flexGrow': 1,
+                            style={'flexGrow': 1, 'width': '50%',
                                    'background-color': 'white'},
                             children=[
                                 html.Div(id="analytics_filters",
@@ -71,20 +62,43 @@ class Votes():
                 )
             ])
 
-    def _get_filters(self):
-        return html.Div(children=[
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Fonte da campanha (utm_source):"),
-                         dcc.Dropdown(
-                             id='analytics_campaign_source',
-                             options=[{'label': i, 'value': i}
-                                      for i in self.utm_source_options],
-                             value='',
-                             style={"flexGrow": 1}
-                         ),
-                     ])
+    def groupData(self, new_df):
+        df = None
+        try:
+            new_df.head(1)
+            df = new_df
+        except:
+            df = self.df
+        df = df.groupby(['email',
+                         'analytics_campaign',
+                         'analytics_source',
+                         'analytics_medium']) \
+            .count().reset_index(level=0).reset_index(level=0) \
+            .reset_index(level=0) \
+            .reset_index(level=0) \
+            .sort_values(by='criado', ascending=False)
+        self.utm_source_options = df['analytics_source'].value_counts(
+        ).keys()
+        self.utm_medium_options = df['analytics_medium'].value_counts(
+        ).keys()
+        self.utm_campaign_options = df['analytics_campaign'].value_counts(
+        ).keys()
+        return df
+
+    def _get_filters(self, new_df):
+        self.groupData(new_df)
+        return html.Div(style={"flexGrow": "2"}, children=[
+            html.Div(children=[html.Div(style={'display': 'flex'}, children=[
+                html.Span(style={"marginRight": 8},
+                          children="Fonte da campanha (utm_source):"),
+                dcc.Dropdown(
+                        id='analytics_campaign_source',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_source_options],
+                        value='',
+                        style={"flexGrow": 1}
+                        ),
+            ])
             ]),
             html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
                      children=[html.Div(style={'display': 'flex'}, children=[
@@ -112,5 +126,29 @@ class Votes():
                          ),
                      ])
             ]),
+            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
+                     children=[html.Div(style={'display': 'flex'}, children=[
+                         html.Span(style={"marginRight": 8},
+                                   children="Período"),
+                         dcc.DatePickerRange(
+                             id='votes_by_date',
+                             style={"flexGrow": 1},
+                         ),
+                     ])
+            ]),
         ],
         )
+
+    def dataframe_between_dates(self, df, first_day, last_day):
+        if(first_day and last_day):
+            partial_df = df[df['criado'].map(lambda x: parse(
+                x).date() >= first_day and parse(x).date() <= last_day)]
+            return pd.DataFrame(partial_df)
+        elif (first_day and not last_day):
+            partial_df = df[df['criado'].map(
+                lambda x: parse(x).date() < first_day)]
+            return pd.DataFrame(partial_df)
+        elif (last_day and not first_day):
+            partial_df = df[df['criado'].map(
+                lambda x: parse(x).date() > last_day)]
+            return pd.DataFrame(partial_df)
