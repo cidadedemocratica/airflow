@@ -90,7 +90,7 @@ class Analytics():
             x=[-50], y=[50],
             mode='markers',
             marker=dict(
-                size=[(300 - self.analytics_users) + self.analytics_users],
+                size=[300],
                 color='#30bfd3',
                 sizeref=1.1,
             ),
@@ -116,8 +116,6 @@ class Analytics():
         if (_filter == None):
             _filter = self.get_default_filter()
         analytics_users = self._get_analytics_new_users(_filter)
-        print(_filter)
-        print(int(analytics_users))
         return int(analytics_users)
 
     def get_default_filter(self):
@@ -136,8 +134,8 @@ class Analytics():
                         "endDate": endDate
                     },
                     "metrics": [{
-                        "expression": "ga:newUsers",
-                        "alias": "newUsers",
+                        "expression": "ga:users",
+                        "alias": "users",
                         "formattingType": "INTEGER"
                     }],
                     "dimensions": [{
@@ -153,17 +151,61 @@ class Analytics():
         self.ej_users = len(self.df['email'].value_counts())
         self.analytics_users = self.get_analytics_report(None)
 
-    def set_campaign_filter(self, campaign):
+    def set_campaign_source_filter(self, campaign):
         analytics_filter = self.filter_by_campaign(campaign)
         self.analytics_users = self.get_analytics_report(analytics_filter)
 
         self.ej_users = int(
             len(self.df[self.df['analytics_source']
                         == campaign]['email'].value_counts()))
-        print("ej users")
-        print(self.ej_users)
-        print(self.analytics_users)
-        print("ej users")
+
+    def set_campaign_name_filter(self, campaign):
+        analytics_filter = self.filter_by_name(campaign)
+        self.analytics_users = self.get_analytics_report(analytics_filter)
+
+        self.ej_users = int(
+            len(self.df[self.df['analytics_campaign']
+                        == campaign]['email'].value_counts()))
+
+    def set_campaign_medium_filter(self, campaign):
+        analytics_filter = self.filter_by_medium(campaign)
+        self.analytics_users = self.get_analytics_report(analytics_filter)
+
+        self.ej_users = int(
+            len(self.df[self.df['analytics_medium']
+                        == campaign]['email'].value_counts()))
+
+    def set_campaign_date_range_filter(self, start_date, end_date):
+        analytics_filter = self.filter_by_date(start_date, end_date)
+        self.analytics_users = self.get_analytics_report(analytics_filter)
+
+        self.ej_users = int(len(self.dataframe_between_dates(
+            self.df, start_date, end_date)))
+
+    def filter_by_date(self, start_date, end_date):
+        start_date = start_date.strftime("%Y-%m-%d")
+        end_date = end_date.strftime("%Y-%m-%d")
+        return {
+            "reportRequests": [
+                {
+                    "viewId": VIEW_ID,
+                    "dateRanges": {
+                        "startDate": start_date,
+                        "endDate": end_date
+                    },
+                    "metrics": [{
+                        "expression": "ga:users",
+                        "alias": "users",
+                        "formattingType": "INTEGER"
+                    }],
+                    "dimensions": [{
+                        "name": "ga:pagePath"
+                    }],
+                    "filtersExpression": f"ga:pagePath==/opiniao/"
+                }
+            ],
+            "useResourceQuotas": False
+        }
 
     def filter_by_campaign(self, campaign):
         # start from datetime.now - 60 days
@@ -181,8 +223,8 @@ class Analytics():
                         "endDate": endDate
                     },
                     "metrics": [{
-                        "expression": "ga:newUsers",
-                        "alias": "newUsers",
+                        "expression": "ga:users",
+                        "alias": "users",
                         "formattingType": "INTEGER"
                     }],
                     "dimensions": [{
@@ -192,6 +234,70 @@ class Analytics():
                         "name": "ga:source"
                     }],
                     "filtersExpression": f"ga:pagePath==/opiniao/;ga:source=={campaign}"
+                }
+            ],
+            "useResourceQuotas": False
+        }
+
+    def filter_by_name(self, campaign_name):
+        # start from datetime.now - 60 days
+        startDate = (datetime.datetime.now(datetime.timezone.utc) -
+                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+        # include today on report
+        endDate = datetime.datetime.now(
+            datetime.timezone.utc).strftime("%Y-%m-%d")
+        return {
+            "reportRequests": [
+                {
+                    "viewId": VIEW_ID,
+                    "dateRanges": {
+                        "startDate": startDate,
+                        "endDate": endDate
+                    },
+                    "metrics": [{
+                        "expression": "ga:users",
+                        "alias": "users",
+                        "formattingType": "INTEGER"
+                    }],
+                    "dimensions": [{
+                        "name": "ga:pagePath"
+                    },
+                        {
+                        "name": "ga:campaign"
+                    }],
+                    "filtersExpression": f"ga:pagePath==/opiniao/;ga:campaign=={campaign_name}"
+                }
+            ],
+            "useResourceQuotas": False
+        }
+
+    def filter_by_medium(self, campaign_medium):
+        # start from datetime.now - 60 days
+        startDate = (datetime.datetime.now(datetime.timezone.utc) -
+                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+        # include today on report
+        endDate = datetime.datetime.now(
+            datetime.timezone.utc).strftime("%Y-%m-%d")
+        return {
+            "reportRequests": [
+                {
+                    "viewId": VIEW_ID,
+                    "dateRanges": {
+                        "startDate": startDate,
+                        "endDate": endDate
+                    },
+                    "metrics": [{
+                        "expression": "ga:users",
+                        "alias": "users",
+                        "formattingType": "INTEGER"
+                    }],
+                    "dimensions": [{
+                        "name": "ga:pagePath"
+                    },
+                        {
+                        "name": "ga:medium"
+                    }],
+                    "filtersExpression": f"ga:pagePath==/opiniao/;ga:medium=={campaign_medium}"
                 }
             ],
             "useResourceQuotas": False
@@ -208,7 +314,7 @@ class Analytics():
             return new_users
 
     def _get_filters(self, new_df):
-        self.groupData(new_df)
+        self.set_filters_options(new_df)
         return html.Div(style={"flexGrow": "2"}, children=[
             html.Div(children=[html.Div(style={'display': 'flex'}, children=[
                 html.Span(style={"marginRight": 8},
@@ -261,7 +367,7 @@ class Analytics():
         ],
         )
 
-    def groupData(self, new_df):
+    def set_filters_options(self, new_df):
         df = None
         try:
             new_df.head(1)
@@ -282,4 +388,17 @@ class Analytics():
         ).keys()
         self.utm_campaign_options = df['analytics_campaign'].value_counts(
         ).keys()
-        return df
+
+    def dataframe_between_dates(self, df, first_day, last_day):
+        if(first_day and last_day):
+            partial_df = df[df['criado'].map(lambda x: parse(
+                x).date() >= first_day and parse(x).date() <= last_day)]['email'].value_counts()
+            return pd.DataFrame(partial_df)
+        elif (first_day and not last_day):
+            partial_df = df[df['criado'].map(
+                lambda x: parse(x).date() < first_day)]
+            return pd.DataFrame(partial_df)
+        elif (last_day and not first_day):
+            partial_df = df[df['criado'].map(
+                lambda x: parse(x).date() > last_day)]
+            return pd.DataFrame(partial_df)

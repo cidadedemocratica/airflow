@@ -98,7 +98,19 @@ class App():
         def distribution_callback(query_explorer_campaign_source, query_explorer_campaign_name, query_explorer_campaign_medium, start_date, end_date):
             _filter = None
             if(query_explorer_campaign_source and len(query_explorer_campaign_source) >= 3):
-                self.analytics.set_campaign_filter(
+                self.analytics.set_campaign_source_filter(
                     query_explorer_campaign_source)
+
+            if(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
+                self.analytics.set_campaign_name_filter(
+                    query_explorer_campaign_name)
+
+            if(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
+                self.analytics.set_campaign_medium_filter(
+                    query_explorer_campaign_medium)
+
+            if(start_date and end_date):
+                self.analytics.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
+                                                              datetime.datetime.fromisoformat(end_date).date())
 
             return self.analytics.get_figure(self.analytics.df)
