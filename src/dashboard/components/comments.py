@@ -4,16 +4,20 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
+from dash.dependencies import Input, Output
 
 
-class Comments():
+class CommentsComponent():
 
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         self.df = None
         self.order_options = ['comentário_id',
                               'concorda', 'discorda', 'pulados']
+        self.prepare()
+        self.callbacks()
 
-    def read(self):
+    def prepare(self):
         comments_df = pd.read_json('/tmp/airflow/comments_only.json')
         self.df = pd.DataFrame(data=comments_df, columns=[
             'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
@@ -111,7 +115,7 @@ class Comments():
                 self.generate_table()
             ])
 
-    def get_html(self):
+    def render(self):
         return html.Div(style={'background-color': 'white', 'marginTop': '15px'},
                         children=[
             html.Div(style={"textAlign": "center", "backgroundColor": "#042a46", "color": "white", "height": "40px"},
@@ -124,3 +128,16 @@ class Comments():
                 self._get_table()
             ])
         ])
+
+    def callbacks(self):
+        @self.app.callback(
+            Output("table_body", 'children'),
+            [Input('_filter', 'value'), Input('participation', 'value')])
+        def table_callback(_filter, participation):
+            df = self.df
+            if(participation):
+                df = df[df['participação'] >= int(participation) / 100]
+            if(_filter in self.order_options):
+                df = df.sort_values(by=_filter, ascending=False)
+                return self.generate_table_body(df)
+            return self.generate_table_body(df)

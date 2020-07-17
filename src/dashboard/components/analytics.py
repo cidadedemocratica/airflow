@@ -4,25 +4,31 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
+from dash.dependencies import Input, Output
 
 from dateutil.parser import *
 from dateutil.tz import *
 import datetime
 from datetime import date
-import analytics_api as analytics
+import lib.analytics_api as analytics
 
 # VIEW_ID = os.getenv("VIEW_ID")
 VIEW_ID = "215248741"
 
 
-class Analytics():
+class AnalyticsComponent():
 
-    def read(self):
+    def __init__(self, app):
+        self.app = app
+        self.prepare()
+        self.callbacks()
+
+    def prepare(self):
         self.df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
         self.analytics_client = analytics.initialize_analyticsreporting()
         self.set_default_filter()
 
-    def get_html(self):
+    def render(self):
         return html.Div(style={'background-color': 'white', 'marginTop': '15px'},
                         children=[
             html.Div(style={"textAlign": "center", "backgroundColor": "#042a46", "color": "white", "height": "40px"},
@@ -402,3 +408,32 @@ class Analytics():
             partial_df = df[df['criado'].map(
                 lambda x: parse(x).date() > last_day)]
             return pd.DataFrame(partial_df)
+
+    def callbacks(self):
+        @self.app.callback(
+            Output("query_explorer_filters", 'children'),
+            [Input('query_explorer_campaign_source', 'value'),
+                Input('query_explorer_campaign_name', 'value'),
+                Input('query_explorer_campaign_medium', 'value'),
+                Input('query_explorer_by_date', 'start_date'),
+                Input('query_explorer_by_date', 'end_date'),
+             ])
+        def distribution_callback(query_explorer_campaign_source, query_explorer_campaign_name, query_explorer_campaign_medium, start_date, end_date):
+            _filter = None
+            if(query_explorer_campaign_source and len(query_explorer_campaign_source) >= 3):
+                self.set_campaign_source_filter(
+                    query_explorer_campaign_source)
+
+            if(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
+                self.set_campaign_name_filter(
+                    query_explorer_campaign_name)
+
+            if(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
+                self.set_campaign_medium_filter(
+                    query_explorer_campaign_medium)
+
+            if(start_date and end_date):
+                self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
+                                                    datetime.datetime.fromisoformat(end_date).date())
+
+            return self.get_figure(self.df)

@@ -5,8 +5,7 @@ from app import App
 
 def start_server():
     dash = App()
-    dash.create()
-    dash.callbacks()
+    dash.render()
     dash.app.run_server(debug=True, host='0.0.0.0')
 
 

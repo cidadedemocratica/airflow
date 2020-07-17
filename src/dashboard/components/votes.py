@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
+from dash.dependencies import Input, Output
 
 from dateutil.parser import *
 from dateutil.tz import *
@@ -11,9 +12,14 @@ import datetime
 from datetime import date
 
 
-class Votes():
+class VotesComponent():
 
-    def read(self):
+    def __init__(self, app):
+        self.app = app
+        self.prepare()
+        self.callbacks()
+
+    def prepare(self):
         self.df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
 
     def get_figure(self, new_df):
@@ -32,7 +38,7 @@ class Votes():
         fig.update_layout(yaxis_zeroline=False)
         return html.Div(children=[dcc.Graph(figure=fig)])
 
-    def get_html(self, new_df=None):
+    def render(self, new_df=None):
         return html.Div(
             style={'backgroundColor': 'white'},
             children=[
@@ -152,3 +158,40 @@ class Votes():
             partial_df = df[df['criado'].map(
                 lambda x: parse(x).date() > last_day)]
             return pd.DataFrame(partial_df)
+
+    def callbacks(self):
+        @self.app.callback(
+            Output("analytics_filters", 'children'),
+            [Input('analytics_campaign_source', 'value'),
+                Input('analytics_campaign_name', 'value'),
+                Input('analytics_campaign_medium', 'value'),
+                Input('votes_by_date', 'start_date'),
+                Input('votes_by_date', 'end_date'),
+             ])
+        def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
+            df = self.df
+            if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
+                df = df[df['analytics_source'] ==
+                        analytics_campaign_source]
+
+            if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
+                df = df[df['analytics_medium'] ==
+                        analytics_campaign_medium]
+
+            if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
+                df = df[df['analytics_campaign'] ==
+                        analytics_campaign_name]
+
+            if(start_date):
+                df = self.dataframe_between_dates(
+                    self.df, datetime.datetime.fromisoformat(start_date).date(), None)
+
+            if(end_date):
+                df = self.dataframe_between_dates(
+                    self.df, None, datetime.datetime.fromisoformat(start_date).date())
+
+            if(start_date and end_date):
+                df = self.dataframe_between_dates(
+                    self.df, datetime.datetime.fromisoformat(start_date).date(), datetime.datetime.fromisoformat(end_date).date())
+
+            return self.get_figure(df)
