@@ -39,34 +39,27 @@ class VotesComponent():
         return html.Div(children=[dcc.Graph(figure=fig)])
 
     def render(self, new_df=None):
-        return html.Div(
-            style={'backgroundColor': 'white'},
-            children=[
-                html.Div(
-                    style={"textAlign": "center",
-                           "backgroundColor": "#042a46",
-                           "color": "white", "height": "40px"},
-                    children=[html.Div(
-                        style={"position": "relative",
-                               "top": "20%"},
-                        children=['Aquisição Qualificada'])]
-                ),
-                html.Div(
-                    style={'display': 'flex'},
-                    children=[
-                        self._get_filters(new_df),
-                        html.Div(
-                            style={'flexGrow': 1, 'width': '50%',
-                                   'background-color': 'white'},
-                            children=[
-                                html.Div(id="analytics_filters",
-                                         children=[self.get_figure(new_df)]
-                                         )
-                            ]
-                        ),
-                    ]
-                )
+        return html.Div(className="row", children=[
+            html.Div(className="col-12 mb-4", children=[
+                html.Div(className="card shadow", children=[
+                    html.Div(className="card-header", children=[
+                        'Aquisição Qualificada']),
+                    html.Div(className="card-body", children=[
+                        html.Div(style={"display": "flex"}, children=[
+                            self._get_filters(new_df),
+                            html.Div(
+                                style={'flexGrow': 1, 'width': '50%'},
+                                children=[
+                                    html.Div(id="analytics_filters",
+                                             children=[self.get_figure(new_df)]
+                                             )
+                                ]
+                            ),
+                        ])
+                    ])
+                ])
             ])
+        ])
 
     def groupData(self, new_df):
         df = None
@@ -94,53 +87,52 @@ class VotesComponent():
     def _get_filters(self, new_df):
         self.groupData(new_df)
         return html.Div(style={"flexGrow": "2"}, children=[
-            html.Div(children=[html.Div(style={'display': 'flex'}, children=[
-                html.Span(style={"marginRight": 8},
-                          children="Fonte da campanha (utm_source):"),
-                dcc.Dropdown(
+            html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_source:"),
+                    dcc.Dropdown(
                         id='analytics_campaign_source',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_source_options],
                         value='',
                         style={"flexGrow": 1}
-                        ),
-            ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Meio da campanha (utm_medium):"),
-                         dcc.Dropdown(
-                             id='analytics_campaign_medium',
-                             options=[{'label': i, 'value': i}
-                                      for i in self.utm_medium_options],
-                             value='',
-                             style={"flexGrow": 1}
-                         ),
-                     ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Nome da campanha (utm_campaign):"),
-                         dcc.Dropdown(
-                             id='analytics_campaign_name',
-                             options=[{'label': i, 'value': i}
-                                      for i in self.utm_campaign_options],
-                             value='',
-                             style={"flexGrow": 1}
-                         ),
-                     ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Período"),
-                         dcc.DatePickerRange(
-                             id='votes_by_date',
-                             style={"flexGrow": 1},
-                         ),
-                     ])
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_medium:"),
+                    dcc.Dropdown(
+                        id='analytics_campaign_medium',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_medium_options],
+                        value='',
+                        style={"flexGrow": 1}
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_campaign:"),
+                    dcc.Dropdown(
+                        id='analytics_campaign_name',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_campaign_options],
+                        value='',
+                        style={"flexGrow": 1}
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="Período"),
+                    dcc.DatePickerRange(
+                        id='votes_by_date',
+                        style={"flexGrow": 1},
+                    ),
+                ])
+                ]),
             ]),
         ],
         )

@@ -29,29 +29,22 @@ class AnalyticsComponent():
         self.set_default_filter()
 
     def render(self):
-        return html.Div(style={'background-color': 'white', 'marginTop': '15px'},
-                        children=[
-            html.Div(style={"textAlign": "center", "backgroundColor": "#042a46", "color": "white", "height": "40px"},
-                     children=[
-                         html.Div(style={"position": "relative", "top": "20%"},
-                                  children=['Engajamento vs Aquisição (EJ)'])
-            ]
-            ),
-            html.Div(
-                style={'display': 'flex'},
-                children=[
-                    self._get_filters(self.df),
-                    html.Div(
-                        style={'flexGrow': 1, 'width': '60%',
-                               'background-color': 'white'},
-                        children=[
+        return html.Div(className="row", children=[
+            html.Div(className="col-12 mb-4", children=[
+                html.Div(className="card shadow", children=[
+                    html.Div(className="card-header", children=[
+                        'Engajamento vs Aquisição (EJ)']),
+                    html.Div(className="card-body", children=[
+                        html.Div(style={"display": "flex"}, children=[
+                            self._get_filters(self.df),
                             html.Div(id="query_explorer_filters",
-                                     children=[self.get_figure(self.df)]
-                                     )
-                        ]
-                    ),
-                ]
-            )
+                                     style={"flexGrow": 1, "width": "60%"}, children=[
+                                         self.get_figure(self.df)
+                                     ])
+                        ])
+                    ])
+                ])
+            ])
         ])
 
     def get_figure(self, new_df):
@@ -62,11 +55,10 @@ class AnalyticsComponent():
         except:
             df = self.df
         fig = go.Figure(layout={'title': {'text': '', 'x': 0.5,
-                                          'font': {'size': 20, 'color': '#ff3e72', 'family': 'Times New Roman'}},
+                                          'font': {'size': 16, 'color': '#ff3e72', 'family': 'Times New Roman'}},
                                 'xaxis': {'visible': False},
                                 'yaxis': {'visible': False},
                                 'plot_bgcolor': "#ffffff",
-                                'width': 500,
                                 'legend': {
             'font': {'size': 15, 'color': '#000'},
                                     'y': 0.8
@@ -114,7 +106,7 @@ class AnalyticsComponent():
             name="Visitas que participaram da conversa",
         )
         )
-        return html.Div(style={'width': '90%', 'margin': '20px auto'}, children=[
+        return html.Div(children=[
             dcc.Graph(figure=fig)
         ])
 
@@ -322,54 +314,53 @@ class AnalyticsComponent():
     def _get_filters(self, new_df):
         self.set_filters_options(new_df)
         return html.Div(style={"flexGrow": "2"}, children=[
-            html.Div(children=[html.Div(style={'display': 'flex'}, children=[
-                html.Span(style={"marginRight": 8},
-                          children="Fonte da campanha (utm_source):"),
-                dcc.Dropdown(
+            html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_source:"),
+                    dcc.Dropdown(
                         id='query_explorer_campaign_source',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_source_options],
                         value='',
                         style={"flexGrow": 1}
-                        ),
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_medium:"),
+                    dcc.Dropdown(
+                        id='query_explorer_campaign_medium',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_medium_options],
+                        value='',
+                        style={"flexGrow": 1}
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_campaign:"),
+                    dcc.Dropdown(
+                        id='query_explorer_campaign_name',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_campaign_options],
+                        value='',
+                        style={"flexGrow": 1}
+                    ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="Período:"),
+                    dcc.DatePickerRange(
+                        id='query_explorer_by_date',
+                        style={"flexGrow": 1},
+                    ),
+                ])
+                ]),
             ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Meio da campanha (utm_medium):"),
-                         dcc.Dropdown(
-                             id='query_explorer_campaign_medium',
-                             options=[{'label': i, 'value': i}
-                                      for i in self.utm_medium_options],
-                             value='',
-                             style={"flexGrow": 1}
-                         ),
-                     ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Nome da campanha (utm_campaign):"),
-                         dcc.Dropdown(
-                             id='query_explorer_campaign_name',
-                             options=[{'label': i, 'value': i}
-                                      for i in self.utm_campaign_options],
-                             value='',
-                             style={"flexGrow": 1}
-                         ),
-                     ])
-            ]),
-            html.Div(style={'width': '90%', 'margin': 'auto', 'marginTop': '20px'},
-                     children=[html.Div(style={'display': 'flex'}, children=[
-                         html.Span(style={"marginRight": 8},
-                                   children="Período"),
-                         dcc.DatePickerRange(
-                             id='query_explorer_by_date',
-                             style={"flexGrow": 1},
-                         ),
-                     ])
-            ]),
         ],
         )
 
@@ -418,22 +409,28 @@ class AnalyticsComponent():
                 Input('query_explorer_by_date', 'start_date'),
                 Input('query_explorer_by_date', 'end_date'),
              ])
-        def distribution_callback(query_explorer_campaign_source, query_explorer_campaign_name, query_explorer_campaign_medium, start_date, end_date):
+        def query_explorer_callback(query_explorer_campaign_source,
+                                    query_explorer_campaign_name,
+                                    query_explorer_campaign_medium,
+                                    start_date,
+                                    end_date):
             _filter = None
             if(query_explorer_campaign_source and len(query_explorer_campaign_source) >= 3):
                 self.set_campaign_source_filter(
                     query_explorer_campaign_source)
 
-            if(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
+            elif(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
                 self.set_campaign_name_filter(
                     query_explorer_campaign_name)
 
-            if(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
+            elif(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
                 self.set_campaign_medium_filter(
                     query_explorer_campaign_medium)
 
-            if(start_date and end_date):
+            elif(start_date and end_date):
                 self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
                                                     datetime.datetime.fromisoformat(end_date).date())
 
+            else:
+                self.set_default_filter()
             return self.get_figure(self.df)

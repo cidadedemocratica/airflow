@@ -38,7 +38,7 @@ class CommentsComponent():
         for col in self.df.columns:
             if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
                 ths.append(html.Th(col))
-        return html.Table([
+        return html.Table(style={"marginTop": 20}, children=[
             html.Thead(
                 html.Tr(ths)
             ),
@@ -85,15 +85,16 @@ class CommentsComponent():
                     )
                     tds.append(html.Td(bar))
                 elif((col != "concorda") and (col != "discorda") and (col != "pulados") and (col != 'participação') and (col != 'convergência')):
-                    tds.append(html.Td(df.iloc[index][col]))
+                    tds.append(
+                        html.Td(children=[df.iloc[index][col]]))
             trs.append(html.Tr(tds))
         return trs
 
     def _get_table(self):
         return html.Div(
             children=[
-                html.Div(style={"display": "flex", "width": "20%"}, children=[
-                    html.Span(style={"marginRight": 8},
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Participação acima de:"),
                     dcc.Input(
                         id='participation',
@@ -101,14 +102,14 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
-                html.Div(style={"display": "flex", "width": "30%"}, children=[
-                    html.Span(style={"marginRight": 8},
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Ordenar por:"),
                     dcc.Dropdown(
                         id='_filter',
                         options=[{'label': i, 'value': i}
                                  for i in self.order_options],
-                        value='Fertility rate, total (births per woman)',
+                        value='',
                         style={"flexGrow": 1}
                     ),
                 ]),
@@ -116,21 +117,22 @@ class CommentsComponent():
             ])
 
     def render(self):
-        return html.Div(style={'background-color': 'white', 'marginTop': '15px'},
-                        children=[
-            html.Div(style={"textAlign": "center", "backgroundColor": "#042a46", "color": "white", "height": "40px"},
-                     children=[
-                         html.Div(style={"position": "relative", "top": "20%"},
-                                  children=['Votos e participação em todos os comentários, excluíndo os comentários que foram rejeitados para moderação.'])
-            ]
-            ),
-            html.Div(style={'width': '90%', 'margin': '20px auto'}, children=[
-                self._get_table()
+        return html.Div(className="row", children=[
+            html.Div(className="col-12 mb-4", children=[
+                html.Div(className="card shadow", children=[
+                    html.Div(className="card-header", children=[
+                        'Votos e participação em todos os comentários.']),
+                    html.Div(className="card-body", children=[
+                        html.Div(children=[
+                            self._get_table()
+                        ])
+                    ])
+                ])
             ])
         ])
 
     def callbacks(self):
-        @self.app.callback(
+        @ self.app.callback(
             Output("table_body", 'children'),
             [Input('_filter', 'value'), Input('participation', 'value')])
         def table_callback(_filter, participation):
