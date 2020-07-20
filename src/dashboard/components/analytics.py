@@ -24,7 +24,7 @@ class AnalyticsComponent():
         self.callbacks()
 
     def prepare(self):
-        self.df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
+        self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
         self.analytics_client = analytics.initialize_analyticsreporting()
         self.set_default_filter()
 

@@ -9,3 +9,4 @@ Flask-Bcrypt
 ipython
 requests
 dash==1.13.3
+matplotlib

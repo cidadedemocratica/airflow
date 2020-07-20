@@ -5,7 +5,6 @@ services:
     image: jupyter/datascience-notebook
     ports:
       - "8888:8888"
-      - "8050:8050"
     volumes:
       - ./src:/home/jovyan/work/
       - analysisdata:/tmp/airflow/
@@ -22,6 +21,7 @@ services:
       - airflowdata:/home/airflow/
     ports:
       - "8080:8080"
+      - "8050:8050"
     entrypoint: "sh /home/airflow/dags/src/airflow/airflow-run.sh" 
 volumes:
   analysisdata:

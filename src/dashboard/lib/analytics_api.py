@@ -15,12 +15,12 @@ from oauth2client import tools
 from dotenv import load_dotenv
 from pathlib import Path
 CURRENT_ENV = os.getenv('AIRFLOW_ENV', 'prod')
-env_path = Path('.') / f"/tmp/airflow/.{CURRENT_ENV}.env"
+env_path = Path('.') / f"/tmp/.{CURRENT_ENV}.env"
 load_dotenv(dotenv_path=env_path)
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
-CLIENT_SECRETS_PATH = '/tmp/airflow/client_secrets.json'
+CLIENT_SECRETS_PATH = '/tmp/client_secrets.json'
 # VIEW_ID = os.getenv("VIEW_ID")
 VIEW_ID = "215248741"
 
@@ -47,7 +47,7 @@ def initialize_analyticsreporting():
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
     storage = file.Storage(
-        f"/tmp/airflow/.analyticsreporting.dat")
+        f"/tmp/.analyticsreporting.dat")
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)

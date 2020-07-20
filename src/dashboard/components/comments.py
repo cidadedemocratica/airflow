@@ -18,7 +18,7 @@ class CommentsComponent():
         self.callbacks()
 
     def prepare(self):
-        comments_df = pd.read_json('/tmp/airflow/comments_only.json')
+        comments_df = pd.read_json('/tmp/comments_only.json')
         self.df = pd.DataFrame(data=comments_df, columns=[
             'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
         self.df['concorda'] = self.df['concorda'].map(

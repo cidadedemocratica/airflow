@@ -20,7 +20,7 @@ class VotesComponent():
         self.callbacks()
 
     def prepare(self):
-        self.df = pd.read_json('/tmp/airflow/votes_analytics_mautic.json')
+        self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
 
     def get_figure(self, new_df):
         df = None
