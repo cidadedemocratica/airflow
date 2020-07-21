@@ -6,7 +6,10 @@ cp /home/airflow/dags/src/.analyticsreporting.dat /tmp
 cp /home/airflow/dags/src/airflow/client_secrets.json /tmp/
 cp /home/airflow/dags/src/airflow/.*.env /tmp/
 python /home/airflow/dags/src/dashboard/server.py &
-airflow initdb
+DB_FILE=/home/airflow/airflow.db
+if test ! -f "$DB_FILE"; then
+	airflow initdb
+fi
 airflow webserver -p 8080 & 
 airflow scheduler
 
