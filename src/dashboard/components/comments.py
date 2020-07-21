@@ -19,7 +19,7 @@ class CommentsComponent():
 
     def prepare(self):
         try:
-            comments_df = pd.read_json('/tmp/comments_only.json')
+            comments_df = pd.read_json('/tmp/comments.json')
             self.df = pd.DataFrame(data=comments_df, columns=[
                 'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
             self.df['concorda'] = self.df['concorda'].map(
