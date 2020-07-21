@@ -43,7 +43,7 @@ class VotesComponent():
         return html.Div(children=[dcc.Graph(figure=fig)])
 
     def render(self, new_df=None):
-        if(self.df or new_df):
+        if(not self.df.empty or not new_df.empty):
             return html.Div(className="row", children=[
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
@@ -168,7 +168,7 @@ class VotesComponent():
             return pd.DataFrame(partial_df)
 
     def callbacks(self):
-        if(self.df):
+        if(not self.df.empty):
             @self.app.callback(
                 Output("analytics_filters", 'children'),
                 [Input('analytics_campaign_source', 'value'),

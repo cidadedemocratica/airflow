@@ -20,7 +20,7 @@ class AnalyticsComponent():
 
     def __init__(self, app):
         self.app = app
-        self.df = None
+        self.df = pd.DataFrame({})
         self.prepare()
 
     def prepare(self):
@@ -33,7 +33,7 @@ class AnalyticsComponent():
             pass
 
     def render(self):
-        if(self.df):
+        if(not self.df.empty):
             return html.Div(className="row", children=[
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
@@ -416,7 +416,7 @@ class AnalyticsComponent():
             return pd.DataFrame(partial_df)
 
     def callbacks(self):
-        if(self.df):
+        if(not self.df.empty):
             @self.app.callback(
                 Output("query_explorer_filters", 'children'),
                 [Input('query_explorer_campaign_source', 'value'),

@@ -11,7 +11,7 @@ class CommentsComponent():
 
     def __init__(self, app):
         self.app = app
-        self.df = None
+        self.df = pd.DataFrame({})
         self.order_options = ['comentário_id',
                               'concorda', 'discorda', 'pulados']
         self.prepare()
@@ -120,7 +120,7 @@ class CommentsComponent():
             ])
 
     def render(self):
-        if(self.df):
+        if(not self.df.empty):
             return html.Div(className="row", children=[
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
@@ -146,7 +146,7 @@ class CommentsComponent():
         ])
 
     def callbacks(self):
-        if(self.df):
+        if(not self.df.empty):
             @ self.app.callback(
                 Output("table_body", 'children'),
                 [Input('_filter', 'value'), Input('participation', 'value')])
