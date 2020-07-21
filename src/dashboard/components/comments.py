@@ -18,20 +18,23 @@ class CommentsComponent():
         self.callbacks()
 
     def prepare(self):
-        comments_df = pd.read_json('/tmp/comments_only.json')
-        self.df = pd.DataFrame(data=comments_df, columns=[
-            'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
-        self.df['concorda'] = self.df['concorda'].map(
-            lambda x: x * 100)
-        self.df['discorda'] = self.df['discorda'].map(
-            lambda x: x * 100)
-        self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
-        self.df['convergência'] = self.df['convergência'].map(
-            lambda x: round(x * 100))
-        self.df['geral'] = ''
-        for index, value in enumerate(self.df['concorda']):
-            self.df['geral'][index] = [self.df['concorda'][index],
-                                       self.df['discorda'][index], self.df['pulados'][index]]
+        try:
+            comments_df = pd.read_json('/tmp/comments_only.json')
+            self.df = pd.DataFrame(data=comments_df, columns=[
+                'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
+            self.df['concorda'] = self.df['concorda'].map(
+                lambda x: x * 100)
+            self.df['discorda'] = self.df['discorda'].map(
+                lambda x: x * 100)
+            self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
+            self.df['convergência'] = self.df['convergência'].map(
+                lambda x: round(x * 100))
+            self.df['geral'] = ''
+            for index, value in enumerate(self.df['concorda']):
+                self.df['geral'][index] = [self.df['concorda'][index],
+                                           self.df['discorda'][index], self.df['pulados'][index]]
+        except:
+            pass
 
     def generate_table(self):
         ths = []
@@ -117,29 +120,41 @@ class CommentsComponent():
             ])
 
     def render(self):
+        if(self.df):
+            return html.Div(className="row", children=[
+                html.Div(className="col-12 mb-4", children=[
+                    html.Div(className="card shadow", children=[
+                        html.Div(className="card-header", children=[
+                            'Votos e participação em todos os comentários.']),
+                        html.Div(className="card-body", children=[
+                            html.Div(children=[
+                                self._get_table()
+                            ])
+                        ])
+                    ])
+                ])
+            ])
         return html.Div(className="row", children=[
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Votos e participação em todos os comentários.']),
-                    html.Div(className="card-body", children=[
-                        html.Div(children=[
-                            self._get_table()
-                        ])
-                    ])
+                    html.Div(className="card-body",
+                             children=["Não há dados para apresentar"])
                 ])
             ])
         ])
 
     def callbacks(self):
-        @ self.app.callback(
-            Output("table_body", 'children'),
-            [Input('_filter', 'value'), Input('participation', 'value')])
-        def table_callback(_filter, participation):
-            df = self.df
-            if(participation):
-                df = df[df['participação'] >= int(participation) / 100]
-            if(_filter in self.order_options):
-                df = df.sort_values(by=_filter, ascending=False)
+        if(self.df):
+            @ self.app.callback(
+                Output("table_body", 'children'),
+                [Input('_filter', 'value'), Input('participation', 'value')])
+            def table_callback(_filter, participation):
+                df = self.df
+                if(participation):
+                    df = df[df['participação'] >= int(participation) / 100]
+                if(_filter in self.order_options):
+                    df = df.sort_values(by=_filter, ascending=False)
+                    return self.generate_table_body(df)
                 return self.generate_table_body(df)
-            return self.generate_table_body(df)

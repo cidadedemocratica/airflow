@@ -20,29 +20,44 @@ class AnalyticsComponent():
 
     def __init__(self, app):
         self.app = app
+        self.df = None
         self.prepare()
-        self.callbacks()
 
     def prepare(self):
-        self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
-        self.analytics_client = analytics.initialize_analyticsreporting()
-        self.set_default_filter()
+        try:
+            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+            self.analytics_client = analytics.initialize_analyticsreporting()
+            self.set_default_filter()
+            self.callbacks()
+        except:
+            pass
 
     def render(self):
+        if(self.df):
+            return html.Div(className="row", children=[
+                html.Div(className="col-12 mb-4", children=[
+                    html.Div(className="card shadow", children=[
+                        html.Div(className="card-header", children=[
+                            'Engajamento vs Aquisição (EJ)']),
+                        html.Div(className="card-body", children=[
+                            html.Div(style={"display": "flex"}, children=[
+                                self._get_filters(self.df),
+                                html.Div(id="query_explorer_filters",
+                                         style={"flexGrow": 1, "width": "60%"}, children=[
+                                            self.get_figure(self.df)
+                                         ])
+                            ])
+                        ])
+                    ])
+                ])
+            ])
         return html.Div(className="row", children=[
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Engajamento vs Aquisição (EJ)']),
-                    html.Div(className="card-body", children=[
-                        html.Div(style={"display": "flex"}, children=[
-                            self._get_filters(self.df),
-                            html.Div(id="query_explorer_filters",
-                                     style={"flexGrow": 1, "width": "60%"}, children=[
-                                         self.get_figure(self.df)
-                                     ])
-                        ])
-                    ])
+                    html.Div(className="card-body",
+                             children=["Não há dados para apresentar"])
                 ])
             ])
         ])
@@ -401,36 +416,37 @@ class AnalyticsComponent():
             return pd.DataFrame(partial_df)
 
     def callbacks(self):
-        @self.app.callback(
-            Output("query_explorer_filters", 'children'),
-            [Input('query_explorer_campaign_source', 'value'),
-                Input('query_explorer_campaign_name', 'value'),
-                Input('query_explorer_campaign_medium', 'value'),
-                Input('query_explorer_by_date', 'start_date'),
-                Input('query_explorer_by_date', 'end_date'),
-             ])
-        def query_explorer_callback(query_explorer_campaign_source,
-                                    query_explorer_campaign_name,
-                                    query_explorer_campaign_medium,
-                                    start_date,
-                                    end_date):
-            _filter = None
-            if(query_explorer_campaign_source and len(query_explorer_campaign_source) >= 3):
-                self.set_campaign_source_filter(
-                    query_explorer_campaign_source)
+        if(self.df):
+            @self.app.callback(
+                Output("query_explorer_filters", 'children'),
+                [Input('query_explorer_campaign_source', 'value'),
+                    Input('query_explorer_campaign_name', 'value'),
+                    Input('query_explorer_campaign_medium', 'value'),
+                    Input('query_explorer_by_date', 'start_date'),
+                    Input('query_explorer_by_date', 'end_date'),
+                 ])
+            def query_explorer_callback(query_explorer_campaign_source,
+                                        query_explorer_campaign_name,
+                                        query_explorer_campaign_medium,
+                                        start_date,
+                                        end_date):
+                _filter = None
+                if(query_explorer_campaign_source and len(query_explorer_campaign_source) >= 3):
+                    self.set_campaign_source_filter(
+                        query_explorer_campaign_source)
 
-            elif(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
-                self.set_campaign_name_filter(
-                    query_explorer_campaign_name)
+                elif(query_explorer_campaign_name and len(query_explorer_campaign_name) >= 3):
+                    self.set_campaign_name_filter(
+                        query_explorer_campaign_name)
 
-            elif(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
-                self.set_campaign_medium_filter(
-                    query_explorer_campaign_medium)
+                elif(query_explorer_campaign_medium and len(query_explorer_campaign_medium) >= 3):
+                    self.set_campaign_medium_filter(
+                        query_explorer_campaign_medium)
 
-            elif(start_date and end_date):
-                self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
-                                                    datetime.datetime.fromisoformat(end_date).date())
+                elif(start_date and end_date):
+                    self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
+                                                        datetime.datetime.fromisoformat(end_date).date())
 
-            else:
-                self.set_default_filter()
-            return self.get_figure(self.df)
+                else:
+                    self.set_default_filter()
+                return self.get_figure(self.df)

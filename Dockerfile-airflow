@@ -1,8 +1,4 @@
 FROM python:3.7
 COPY src /home/airflow/dags/src/
-RUN cp /home/airflow/dags/src/.analyticsreporting.dat /home/airflow/
 WORKDIR  /home/airflow/dags/src/airflow
-RUN cp client_secrets.json /tmp/
-RUN cp .*.env /tmp
 RUN pip install -r requirements.txt
-RUN airflow initdb

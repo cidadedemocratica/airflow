@@ -14,11 +14,11 @@ services:
       dockerfile: Dockerfile-airflow
     environment:
       - AIRFLOW_ENV=prod
-      - AIRFLOW_HOME=/home/airflow
+      - AIRFLOW_HOME=/var/airflow
     volumes:
       - ./src:/home/airflow/dags/src/
       - analysisdata:/tmp/
-      - airflowdata:/home/airflow/
+      - airflowdata:/var/airflow/
     ports:
       - "8080:8080"
       - "8050:8050"

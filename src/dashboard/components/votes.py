@@ -16,11 +16,15 @@ class VotesComponent():
 
     def __init__(self, app):
         self.app = app
+        self.df = None
         self.prepare()
-        self.callbacks()
 
     def prepare(self):
-        self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+        try:
+            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+            self.callbacks()
+        except:
+            pass
 
     def get_figure(self, new_df):
         df = None
@@ -39,24 +43,36 @@ class VotesComponent():
         return html.Div(children=[dcc.Graph(figure=fig)])
 
     def render(self, new_df=None):
+        if(self.df or new_df):
+            return html.Div(className="row", children=[
+                html.Div(className="col-12 mb-4", children=[
+                    html.Div(className="card shadow", children=[
+                        html.Div(className="card-header", children=[
+                            'Aquisição Qualificada']),
+                        html.Div(className="card-body", children=[
+                            html.Div(style={"display": "flex"}, children=[
+                                self._get_filters(new_df),
+                                html.Div(
+                                    style={'flexGrow': 1, 'width': '50%'},
+                                    children=[
+                                        html.Div(id="analytics_filters",
+                                                 children=[
+                                                     self.get_figure(new_df)]
+                                                 )
+                                    ]
+                                ),
+                            ])
+                        ])
+                    ])
+                ])
+            ])
         return html.Div(className="row", children=[
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Aquisição Qualificada']),
-                    html.Div(className="card-body", children=[
-                        html.Div(style={"display": "flex"}, children=[
-                            self._get_filters(new_df),
-                            html.Div(
-                                style={'flexGrow': 1, 'width': '50%'},
-                                children=[
-                                    html.Div(id="analytics_filters",
-                                             children=[self.get_figure(new_df)]
-                                             )
-                                ]
-                            ),
-                        ])
-                    ])
+                    html.Div(className="card-body",
+                             children=["Não há dados para apresentar"])
                 ])
             ])
         ])
@@ -152,38 +168,39 @@ class VotesComponent():
             return pd.DataFrame(partial_df)
 
     def callbacks(self):
-        @self.app.callback(
-            Output("analytics_filters", 'children'),
-            [Input('analytics_campaign_source', 'value'),
-                Input('analytics_campaign_name', 'value'),
-                Input('analytics_campaign_medium', 'value'),
-                Input('votes_by_date', 'start_date'),
-                Input('votes_by_date', 'end_date'),
-             ])
-        def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
-            df = self.df
-            if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
-                df = df[df['analytics_source'] ==
-                        analytics_campaign_source]
+        if(self.df):
+            @self.app.callback(
+                Output("analytics_filters", 'children'),
+                [Input('analytics_campaign_source', 'value'),
+                    Input('analytics_campaign_name', 'value'),
+                    Input('analytics_campaign_medium', 'value'),
+                    Input('votes_by_date', 'start_date'),
+                    Input('votes_by_date', 'end_date'),
+                 ])
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
+                df = self.df
+                if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
+                    df = df[df['analytics_source'] ==
+                            analytics_campaign_source]
 
-            if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
-                df = df[df['analytics_medium'] ==
-                        analytics_campaign_medium]
+                if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
+                    df = df[df['analytics_medium'] ==
+                            analytics_campaign_medium]
 
-            if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
-                df = df[df['analytics_campaign'] ==
-                        analytics_campaign_name]
+                if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
+                    df = df[df['analytics_campaign'] ==
+                            analytics_campaign_name]
 
-            if(start_date):
-                df = self.dataframe_between_dates(
-                    self.df, datetime.datetime.fromisoformat(start_date).date(), None)
+                if(start_date):
+                    df = self.dataframe_between_dates(
+                        self.df, datetime.datetime.fromisoformat(start_date).date(), None)
 
-            if(end_date):
-                df = self.dataframe_between_dates(
-                    self.df, None, datetime.datetime.fromisoformat(start_date).date())
+                if(end_date):
+                    df = self.dataframe_between_dates(
+                        self.df, None, datetime.datetime.fromisoformat(start_date).date())
 
-            if(start_date and end_date):
-                df = self.dataframe_between_dates(
-                    self.df, datetime.datetime.fromisoformat(start_date).date(), datetime.datetime.fromisoformat(end_date).date())
+                if(start_date and end_date):
+                    df = self.dataframe_between_dates(
+                        self.df, datetime.datetime.fromisoformat(start_date).date(), datetime.datetime.fromisoformat(end_date).date())
 
-            return self.get_figure(df)
+                return self.get_figure(df)
