@@ -19,7 +19,10 @@ class AnalyticsApiOperator(BaseOperator):
     @apply_defaults
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.votes_df = pd.read_json('/tmp/votes_and_mautic.json')
+        try:
+            self.votes_df = pd.read_json('/tmp/votes_and_mautic.json')
+        except:
+            pass
         self.helper = helper.OperatorHelper()
         self.analytics_client = analytics.initialize_analyticsreporting()
 
