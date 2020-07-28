@@ -16,7 +16,7 @@ class VotesComponent():
 
     def __init__(self, app):
         self.app = app
-        self.df = None
+        self.df = pd.DataFrame({})
         self.prepare()
 
     def prepare(self):
@@ -42,7 +42,7 @@ class VotesComponent():
         fig.update_layout(yaxis_zeroline=False)
         return html.Div(children=[dcc.Graph(figure=fig)])
 
-    def render(self, new_df=None):
+    def render(self, new_df=pd.DataFrame({})):
         if(not self.df.empty or not new_df.empty):
             return html.Div(className="row", children=[
                 html.Div(className="col-12 mb-4", children=[
