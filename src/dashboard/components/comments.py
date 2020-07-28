@@ -133,20 +133,20 @@ class CommentsComponent():
             dom_element = html.Div(
                 style={},
                 children=[
-                    html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
+                    html.Div(className='comment-bar', children=[
                         html.Div(style={
-                            'backgroundColor': 'green', 'width': df.iloc[index]['concorda'], 'height': 20}),
+                            'backgroundColor': '#16ab39', 'width': df.iloc[index]['concorda'], 'height': 20}),
                         html.Div(style={
-                            'backgroundColor': 'red', 'width': df.iloc[index]['discorda'], 'height': 20}),
+                            'backgroundColor': '#de011e', 'width': df.iloc[index]['discorda'], 'height': 20}),
                         html.Div(style={
-                            'backgroundColor': 'yellow', 'width': df.iloc[index]['pulados'], 'height': 20})
+                            'backgroundColor': '#042a46', 'width': df.iloc[index]['pulados'], 'height': 20})
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['concorda'])) + '%'),
-                        html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#de011e', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['discorda'])) + '%'),
-                        html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['pulados'])) + '%'),
                     ]),
                 ],
@@ -164,20 +164,20 @@ class CommentsComponent():
             bar = html.Div(
                 style={},
                 children=[
-                    html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
+                    html.Div(className='comment-bar', children=[
                         html.Div(style={
-                            'backgroundColor': 'green', 'width': round(float(cluster_votes_statistics[0])), 'height': 20}),
+                            'backgroundColor': '#16ab39', 'width': round(float(cluster_votes_statistics[0])), 'height': 20}),
                         html.Div(style={
-                            'backgroundColor': 'red', 'width': round(float(cluster_votes_statistics[1])), 'height': 20}),
+                            'backgroundColor': '#de011e', 'width': round(float(cluster_votes_statistics[1])), 'height': 20}),
                         html.Div(style={
-                            'backgroundColor': 'yellow', 'width': round(float(cluster_votes_statistics[2])), 'height': 20})
+                            'backgroundColor': '#042a46', 'width': round(float(cluster_votes_statistics[2])), 'height': 20})
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[0]))) + '%'),
-                        html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#de011e', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[1]))) + '%'),
-                        html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[2]))) + '%'),
                     ]),
                 ],
@@ -208,6 +208,7 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
-                self._generate_table()
+                html.Div(style={'maxWidth': '100vw', 'overflow': 'scroll', 'maxHeight': '600px'},  children=[
+                         self._generate_table()])
             ])
 

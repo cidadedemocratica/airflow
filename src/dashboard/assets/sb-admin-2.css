@@ -218,11 +218,19 @@ caption {
 th {
   text-align: inherit;
   width: 150px;
+  border: 1px solid grey;
+  text-align: center;
+  position: sticky;
+  top: 0;
+background-color: #e3e6f0;
 }
 
 td {
-  padding-bottom: 20px;
-  vertical-align: top;
+  padding: 15px;
+  vertical-align: middle;
+  border: 1px solid grey;
+  text-align: center;
+  min-width: 200px;
 }
 
 label {
@@ -11221,4 +11229,15 @@ footer.sticky-footer .copyright {
 
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
+}
+
+/* Dash Style */
+
+.comment-bar {
+	border-style: solid;
+	border-color: white;
+	width: 100px;
+	height: 20px;
+	display: flex;
+	margin: auto;
 }
