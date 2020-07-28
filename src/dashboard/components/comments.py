@@ -12,6 +12,7 @@ class CommentsComponent():
     def __init__(self, app):
         self.app = app
         self.df = pd.DataFrame({})
+        self.clusters = pd.DataFrame({})
         self.order_options = ['comentário_id',
                               'concorda', 'discorda', 'pulados']
         self.prepare()
@@ -75,14 +76,11 @@ class CommentsComponent():
         ])
 
     def _merge_clusters_data(self):
-        clusters = pd.read_json('/tmp/clusters.json')
-        clusters = clusters.rename(columns={
+        self.clusters = pd.read_json('/tmp/clusters.json')
+        self.clusters = self.clusters.rename(columns={
             "concorda": "cluster_concorda", "desagree": "cluster_discorda", "skip": "cluster_pulado", "comentário_id": "cluster_comentário_id"})
-        for index, value in enumerate(clusters['cluster']):
-            self.df[f'cluster_{value}'] = ''
-
         for index, value in enumerate(self.df['comentário']):
-            comment_clusters = clusters[clusters['comentário'] == value]
+            comment_clusters = self.clusters[self.clusters['comentário'] == value]
             comment_clusters.loc[comment_clusters['comentário'] == value, 'cluster_concorda'] = comment_clusters['cluster_concorda'].map(
                 lambda x: x * 100)
             comment_clusters.loc[comment_clusters['comentário'] == value, 'cluster_discorda'] = comment_clusters['cluster_discorda'].map(
@@ -106,12 +104,8 @@ class CommentsComponent():
             )
         ])
 
-    def _generate_table_body(self, new_df={}):
-        df = None
-        try:
-            new_df.info()
-            df = new_df
-        except:
+    def _generate_table_body(self, df=pd.DataFrame({})):
+        if(df.empty):
             df = self.df
         trs = []
         for index in range(len(df)):
@@ -120,58 +114,76 @@ class CommentsComponent():
                 if(col == "convergência"):
                     tds.append(
                         html.Td(str(df.iloc[index][col]) + '%'))
-                if(col == "geral"):
-                    bar = html.Div(
-                        style={},
-                        children=[
-                            html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
-                                html.Div(style={
-                                    'backgroundColor': 'green', 'width': df.iloc[index]['concorda'], 'height': 20}),
-                                html.Div(style={
-                                    'backgroundColor': 'red', 'width': df.iloc[index]['discorda'], 'height': 20}),
-                                html.Div(style={
-                                    'backgroundColor': 'yellow', 'width': df.iloc[index]['pulados'], 'height': 20})
-                            ]),
-                            html.Div(style={}, children=[
-                                html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(df.iloc[index]['concorda'])) + '%'),
-                                html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(df.iloc[index]['discorda'])) + '%'),
-                                html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(df.iloc[index]['pulados'])) + '%'),
-                            ]),
-                        ],
-                    )
-                    tds.append(html.Td(bar))
-                if(col == "cluster_ativista" or col == "cluster_ocupar política" or col == "cluster_punitivista_antisistema"):
-                    cluster_votes_statistics = df.iloc[index][col].split(',')
-                    bar = html.Div(
-                        style={},
-                        children=[
-                            html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
-                                html.Div(style={
-                                    'backgroundColor': 'green', 'width': round(float(cluster_votes_statistics[0])), 'height': 20}),
-                                html.Div(style={
-                                    'backgroundColor': 'red', 'width': round(float(cluster_votes_statistics[1])), 'height': 20}),
-                                html.Div(style={
-                                    'backgroundColor': 'yellow', 'width': round(float(cluster_votes_statistics[2])), 'height': 20})
-                            ]),
-                            html.Div(style={}, children=[
-                                html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(float(cluster_votes_statistics[0]))) + '%'),
-                                html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(float(cluster_votes_statistics[1]))) + '%'),
-                                html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
-                                    round(float(cluster_votes_statistics[2]))) + '%'),
-                            ]),
-                        ],
-                    )
-                    tds.append(html.Td(bar))
-                elif((col != "cluster_ativista") and (col != "cluster_ocupar política") and (col != "cluster_punitivista_antisistema") and (col != "concorda") and (col != "discorda") and (col != "pulados") and (col != 'participação') and (col != 'convergência') and (col != 'geral')):
+                cluster_columns = self._generate_clusters_columns(
+                    col, df, index)
+                if(cluster_columns):
+                    tds.append(html.Td(cluster_columns))
+                comments_columns = self._generate_comments_columns(
+                    col, df, index)
+                if(comments_columns):
+                    tds.append(html.Td(comments_columns))
+                elif(col in ["autor", "comentário", "comentário_id"]):
                     tds.append(
                         html.Td(children=[df.iloc[index][col]]))
             trs.append(html.Tr(tds))
         return trs
+
+    def _generate_comments_columns(self, col, df, index):
+        if(col == "geral"):
+            dom_element = html.Div(
+                style={},
+                children=[
+                    html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
+                        html.Div(style={
+                            'backgroundColor': 'green', 'width': df.iloc[index]['concorda'], 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': 'red', 'width': df.iloc[index]['discorda'], 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': 'yellow', 'width': df.iloc[index]['pulados'], 'height': 20})
+                    ]),
+                    html.Div(style={}, children=[
+                        html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(df.iloc[index]['concorda'])) + '%'),
+                        html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(df.iloc[index]['discorda'])) + '%'),
+                        html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(df.iloc[index]['pulados'])) + '%'),
+                    ]),
+                ],
+            )
+            return dom_element
+        else:
+            return None
+
+    def _generate_clusters_columns(self, col, df, index):
+        clusters_names = self.clusters.cluster.value_counts().keys()
+        clusters_names = clusters_names.map(
+            lambda cluster_name: f"cluster_{cluster_name}")
+        if(col in clusters_names):
+            cluster_votes_statistics = df.iloc[index][col].split(',')
+            bar = html.Div(
+                style={},
+                children=[
+                    html.Div(style={'borderStyle': 'solid', 'borderColor': 'grey', 'width': '100px', 'height': 20, 'display': 'flex'}, children=[
+                        html.Div(style={
+                            'backgroundColor': 'green', 'width': round(float(cluster_votes_statistics[0])), 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': 'red', 'width': round(float(cluster_votes_statistics[1])), 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': 'yellow', 'width': round(float(cluster_votes_statistics[2])), 'height': 20})
+                    ]),
+                    html.Div(style={}, children=[
+                        html.Span(style={'color': 'green', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(float(cluster_votes_statistics[0]))) + '%'),
+                        html.Span(style={'color': 'red', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(float(cluster_votes_statistics[1]))) + '%'),
+                        html.Span(style={'color': 'yellow', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                            round(float(cluster_votes_statistics[2]))) + '%'),
+                    ]),
+                ],
+            )
+            return bar
+        return None
 
     def _get_table(self):
         return html.Div(
