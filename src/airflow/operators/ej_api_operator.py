@@ -16,7 +16,7 @@ class EjApiOperator(BaseOperator):
     @apply_defaults
     def __init__(self, conversation_id: str, data_type: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.connection = BaseHook.get_connection("ej_prod_api")
+        self.connection = BaseHook.get_connection("ej_dev_api")
         self.conversation_id = conversation_id
         self.data_type = data_type
 

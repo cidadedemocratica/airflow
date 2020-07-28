@@ -52,19 +52,22 @@ class AnalyticsApiOperator(BaseOperator):
             if(not gid or gid == '1'):
                 continue
             self.helper.wait_analytics_quota(counter, "votes")
-            report = analytics.get_user_activity(
-                self.analytics_client, gid)
-            activities = self.helper.get_sessions_activities(
-                report['sessions'])
-            for activity in activities:
-                voteTimeStamps = self.get_client_votes(gid)
-                for voteTime in voteTimeStamps:
-                    belongs = self.vote_belongs_to_activity(
-                        voteTime, activity['activityTime'])
-                    if(belongs):
-                        self.votes_dataframe = self.helper.update_df_with_activity(
-                            self.votes_dataframe, activity, voteTime, gid)
-                        self.votes_dataframe.to_json(
-                            '/tmp/votes_analytics_mautic.json')
-            if(counter == len(gids) - 1):
-                break
+            try:
+                report = analytics.get_user_activity(
+                    self.analytics_client, gid)
+                activities = self.helper.get_sessions_activities(
+                    report['sessions'])
+                for activity in activities:
+                    voteTimeStamps = self.get_client_votes(gid)
+                    for voteTime in voteTimeStamps:
+                        belongs = self.vote_belongs_to_activity(
+                            voteTime, activity['activityTime'])
+                        if(belongs):
+                            self.votes_dataframe = self.helper.update_df_with_activity(
+                                self.votes_dataframe, activity, voteTime, gid)
+                            self.votes_dataframe.to_json(
+                                '/tmp/votes_analytics_mautic.json')
+                if(counter == len(gids) - 1):
+                    break
+            except:
+                pass
