@@ -215,7 +215,7 @@ caption {
   caption-side: bottom;
 }
 
-th {
+.comments-table th {
   text-align: inherit;
   width: 150px;
   border: 1px solid grey;
@@ -225,7 +225,7 @@ th {
 background-color: #e3e6f0;
 }
 
-td {
+.comments-table td {
   padding: 15px;
   vertical-align: middle;
   border: 1px solid grey;

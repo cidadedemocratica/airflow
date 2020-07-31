@@ -95,7 +95,7 @@ class CommentsComponent():
         for col in self.df.columns:
             if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
                 ths.append(html.Th(col))
-        return html.Table(style={"marginTop": 20}, children=[
+        return html.Table(className="comments-table", children=[
             html.Thead(
                 html.Tr(ths)
             ),
