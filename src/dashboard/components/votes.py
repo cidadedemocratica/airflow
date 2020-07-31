@@ -26,14 +26,10 @@ class VotesComponent():
         except:
             pass
 
-    def get_figure(self, new_df):
-        df = None
-        try:
-            new_df.head(1)
-            df = new_df
-        except:
+    def get_figure(self, df=pd.DataFrame({})):
+        if (df.empty):
             df = self.df
-        df = self.groupData(new_df)
+        df = self.groupData(df)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
@@ -77,12 +73,8 @@ class VotesComponent():
             ])
         ])
 
-    def groupData(self, new_df):
-        df = None
-        try:
-            new_df.head(1)
-            df = new_df
-        except:
+    def groupData(self, df=pd.DataFrame({})):
+        if(df.empty):
             df = self.df
         df = df.groupby(['email',
                          'analytics_campaign',

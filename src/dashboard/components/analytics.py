@@ -12,15 +12,15 @@ import datetime
 from datetime import date
 import lib.analytics_api as analytics
 
-# VIEW_ID = os.getenv("VIEW_ID")
-VIEW_ID = "215248741"
-
 
 class AnalyticsComponent():
 
     def __init__(self, app):
         self.app = app
         self.df = pd.DataFrame({})
+        # analytics view id
+        self.view_id = "215248741"
+        self.analytics_days_range = 240
         self.prepare()
 
     def prepare(self):
@@ -62,12 +62,8 @@ class AnalyticsComponent():
             ])
         ])
 
-    def get_figure(self, new_df):
-        df = None
-        try:
-            new_df.head(1)
-            df = new_df
-        except:
+    def get_figure(self, df=pd.DataFrame({})):
+        if(df.empty):
             df = self.df
         fig = go.Figure(layout={'title': {'text': '', 'x': 0.5,
                                           'font': {'size': 16, 'color': '#ff3e72', 'family': 'Times New Roman'}},
@@ -134,14 +130,14 @@ class AnalyticsComponent():
     def get_default_filter(self):
         # start from datetime.now - 60 days
         startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
         # include today on report
         endDate = datetime.datetime.now(
             datetime.timezone.utc).strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
-                    "viewId": VIEW_ID,
+                    "viewId": self.view_id,
                     "dateRanges": {
                         "startDate": startDate,
                         "endDate": endDate
@@ -201,7 +197,7 @@ class AnalyticsComponent():
         return {
             "reportRequests": [
                 {
-                    "viewId": VIEW_ID,
+                    "viewId": self.view_id,
                     "dateRanges": {
                         "startDate": start_date,
                         "endDate": end_date
@@ -223,14 +219,14 @@ class AnalyticsComponent():
     def filter_by_campaign(self, campaign):
         # start from datetime.now - 60 days
         startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
         # include today on report
         endDate = datetime.datetime.now(
             datetime.timezone.utc).strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
-                    "viewId": VIEW_ID,
+                    "viewId": self.view_id,
                     "dateRanges": {
                         "startDate": startDate,
                         "endDate": endDate
@@ -255,14 +251,14 @@ class AnalyticsComponent():
     def filter_by_name(self, campaign_name):
         # start from datetime.now - 60 days
         startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
         # include today on report
         endDate = datetime.datetime.now(
             datetime.timezone.utc).strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
-                    "viewId": VIEW_ID,
+                    "viewId": self.view_id,
                     "dateRanges": {
                         "startDate": startDate,
                         "endDate": endDate
@@ -287,14 +283,14 @@ class AnalyticsComponent():
     def filter_by_medium(self, campaign_medium):
         # start from datetime.now - 60 days
         startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
         # include today on report
         endDate = datetime.datetime.now(
             datetime.timezone.utc).strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
-                    "viewId": VIEW_ID,
+                    "viewId": self.view_id,
                     "dateRanges": {
                         "startDate": startDate,
                         "endDate": endDate
