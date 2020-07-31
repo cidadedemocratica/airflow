@@ -14,6 +14,10 @@ import lib.analytics_api as analytics
 
 
 class AnalyticsService():
+    """
+        AnalyticsService represents a provider to controls AnalyticsComponent data.
+    """
+
     def __init__(self):
         self.df = pd.DataFrame({})
         # analytics view id
@@ -22,6 +26,10 @@ class AnalyticsService():
         self.prepare()
 
     def prepare(self):
+        """
+            reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
+            Also initializes analytics api client.
+        """
         try:
             self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
             self.analytics_client = analytics.initialize_analyticsreporting()
