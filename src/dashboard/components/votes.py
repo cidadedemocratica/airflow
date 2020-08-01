@@ -10,36 +10,45 @@ from dateutil.parser import *
 from dateutil.tz import *
 import datetime
 from datetime import date
+from services.votes import VotesService
 
 
 class VotesComponent():
 
     def __init__(self, app):
         self.app = app
-        self.df = pd.DataFrame({})
+        self.service = VotesService()
+        self.df = self.service.df
+        self.utm_source_options = []
+        self.utm_medium_options = []
+        self.utm_campaign_options = []
         self.prepare()
 
     def prepare(self):
         try:
-            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
-            self.callbacks()
+            self.register_callbacks()
         except:
             pass
 
     def get_figure(self, df=pd.DataFrame({})):
-        if (df.empty):
-            df = self.df
-        df = self.groupData(df)
+        df = self.service.set_filters_options(self, df)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
                         marker_color='#30bfd3'),
-            layout={'title': {'text': '', 'x': 0.5, 'font': {'size': 20, 'color': '#ff3e72', 'family': 'Times New Roman'}}, 'legend': {'font': {'size': 15, 'color': '#000'}, 'y': 0.8}, })
+            layout={
+                'title': {'text': '', 'x': 0.5, 'font':
+                          {'size': 20, 'color': '#ff3e72',
+                                  'family': 'Times New Roman'}
+                          },
+                'legend': {'font': {'size': 15, 'color': '#000'}, 'y': 0.8}
+            }
+        )
         fig.update_layout(yaxis_zeroline=False)
         return html.Div(children=[dcc.Graph(figure=fig)])
 
-    def render(self, new_df=pd.DataFrame({})):
-        if(not self.df.empty or not new_df.empty):
+    def render(self):
+        if(not self.df.empty):
             return html.Div(className="row", children=[
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
@@ -47,13 +56,13 @@ class VotesComponent():
                             'Aquisição Qualificada']),
                         html.Div(className="card-body", children=[
                             html.Div(style={"display": "flex"}, children=[
-                                self._get_filters(new_df),
+                                self.get_filters(self.df),
                                 html.Div(
                                     style={'flexGrow': 1, 'width': '50%'},
                                     children=[
                                         html.Div(id="analytics_filters",
                                                  children=[
-                                                     self.get_figure(new_df)]
+                                                     self.get_figure(self.df)]
                                                  )
                                     ]
                                 ),
@@ -73,27 +82,8 @@ class VotesComponent():
             ])
         ])
 
-    def groupData(self, df=pd.DataFrame({})):
-        if(df.empty):
-            df = self.df
-        df = df.groupby(['email',
-                         'analytics_campaign',
-                         'analytics_source',
-                         'analytics_medium']) \
-            .count().reset_index(level=0).reset_index(level=0) \
-            .reset_index(level=0) \
-            .reset_index(level=0) \
-            .sort_values(by='criado', ascending=False)
-        self.utm_source_options = df['analytics_source'].value_counts(
-        ).keys()
-        self.utm_medium_options = df['analytics_medium'].value_counts(
-        ).keys()
-        self.utm_campaign_options = df['analytics_campaign'].value_counts(
-        ).keys()
-        return df
-
-    def _get_filters(self, new_df):
-        self.groupData(new_df)
+    def get_filters(self, new_df):
+        self.service.set_filters_options(self, new_df)
         return html.Div(style={"flexGrow": "2"}, children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
@@ -145,21 +135,7 @@ class VotesComponent():
         ],
         )
 
-    def dataframe_between_dates(self, df, first_day, last_day):
-        if(first_day and last_day):
-            partial_df = df[df['criado'].map(lambda x: parse(
-                x).date() >= first_day and parse(x).date() <= last_day)]
-            return pd.DataFrame(partial_df)
-        elif (first_day and not last_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() < first_day)]
-            return pd.DataFrame(partial_df)
-        elif (last_day and not first_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() > last_day)]
-            return pd.DataFrame(partial_df)
-
-    def callbacks(self):
+    def register_callbacks(self):
         if(not self.df.empty):
             @self.app.callback(
                 Output("analytics_filters", 'children'),
@@ -172,27 +148,14 @@ class VotesComponent():
             def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
                 df = self.df
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
-                    df = df[df['analytics_source'] ==
-                            analytics_campaign_source]
-
+                    df = self.service.filter_by_utm(
+                        df, 'analytics_source', analytics_campaign_source)
                 if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
-                    df = df[df['analytics_medium'] ==
-                            analytics_campaign_medium]
-
+                    df = self.service.filter_by_utm(
+                        df, 'analytics_medium', analytics_campaign_medium)
                 if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
-                    df = df[df['analytics_campaign'] ==
-                            analytics_campaign_name]
-
-                if(start_date):
-                    df = self.dataframe_between_dates(
-                        self.df, datetime.datetime.fromisoformat(start_date).date(), None)
-
-                if(end_date):
-                    df = self.dataframe_between_dates(
-                        self.df, None, datetime.datetime.fromisoformat(start_date).date())
-
-                if(start_date and end_date):
-                    df = self.dataframe_between_dates(
-                        self.df, datetime.datetime.fromisoformat(start_date).date(), datetime.datetime.fromisoformat(end_date).date())
-
+                    df = self.service.filter_by_utm(
+                        df, 'analytics_campaign', analytics_campaign_name)
+                if(start_date or end_date):
+                    df = self.service.filter_by_date(start_date, end_date)
                 return self.get_figure(df)
