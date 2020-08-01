@@ -14,6 +14,10 @@ from services.votes import VotesService
 
 
 class VotesComponent():
+    """
+        VotesComponent represents a Dash component. This component will
+        show a distribution Chart with some analytics filters.
+    """
 
     def __init__(self, app):
         self.app = app
