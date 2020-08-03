@@ -11,6 +11,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from services.analytics import AnalyticsService
+from components.utils.export import ExportsComponent
 
 
 class AnalyticsComponent():
@@ -22,6 +23,7 @@ class AnalyticsComponent():
     def __init__(self, app):
         self.app = app
         self.service = AnalyticsService()
+        self.export_component = ExportsComponent("analytics")
         self.df = self.service.df
         self.ej_users_count = 1
         self.analytics_users_count = 1
@@ -53,7 +55,7 @@ class AnalyticsComponent():
                                 html.Div(children=[
                                     self.get_filters_ui(self.df),
                                     html.Hr(),
-                                    self.get_export_ui(),
+                                    self.export_component.render(),
                                 ]),
                                 html.Div(id="filters",
                                          style={"flexGrow": 1, "width": "60%"}, children=[
@@ -73,15 +75,6 @@ class AnalyticsComponent():
                              children=["Não há dados para apresentar"])
                 ])
             ])
-        ])
-
-    def get_export_ui(self):
-        return html.Div(style={'marginTop': '10px'}, children=[
-            html.Button('Exportar', id='export_df', n_clicks=0),
-            html.Div(children=[
-                html.A('Clique aqui para baixar', href='', id='download_export',
-                       download='ej-raw-data.csv', target="_blank")
-            ]),
         ])
 
     def get_filters_ui(self, new_df):
@@ -197,14 +190,11 @@ class AnalyticsComponent():
 
     def register_callbacks(self):
         @self.app.callback(
-            Output("download_export", 'href'),
-            [Input('export_df', 'n_clicks')]
+            Output("analytics_download_export", 'href'),
+            [Input('analytics_exports_df', 'n_clicks')]
         )
         def export_callback(export_df):
-            dataAsCSV = self.df.to_csv()
-            urlToDownload = "data:text/csv;charset=utf-8," + \
-                urllib.parse.quote(dataAsCSV)
-            return urlToDownload
+            return self.export_component.export(self.df)
 
         @self.app.callback(
             Output("filters", 'children'),
