@@ -1,13 +1,15 @@
-import pandas as pd
-import plotly.graph_objects as go
-import dash_html_components as html
-import dash_core_components as dcc
-from dash.dependencies import Input, Output
+import datetime
+import urllib.parse
+from datetime import date
 
+import pandas as pd
 from dateutil.parser import *
 from dateutil.tz import *
-import datetime
-from datetime import date
+
+import dash_core_components as dcc
+import dash_html_components as html
+import plotly.graph_objects as go
+from dash.dependencies import Input, Output
 from services.analytics import AnalyticsService
 
 
@@ -48,7 +50,11 @@ class AnalyticsComponent():
                             'Engajamento vs Aquisição (EJ)']),
                         html.Div(className="card-body", children=[
                             html.Div(style={"display": "flex"}, children=[
-                                self.get_filters(self.df),
+                                html.Div(children=[
+                                    self.get_filters_ui(self.df),
+                                    html.Hr(),
+                                    self.get_export_ui(),
+                                ]),
                                 html.Div(id="filters",
                                          style={"flexGrow": 1, "width": "60%"}, children=[
                                             self.get_figure(self.df)
@@ -69,7 +75,16 @@ class AnalyticsComponent():
             ])
         ])
 
-    def get_filters(self, new_df):
+    def get_export_ui(self):
+        return html.Div(style={'marginTop': '10px'}, children=[
+            html.Button('Exportar', id='export_df', n_clicks=0),
+            html.Div(children=[
+                html.A('Clique aqui para baixar', href='', id='download_export',
+                       download='ej-raw-data.csv', target="_blank")
+            ]),
+        ])
+
+    def get_filters_ui(self, new_df):
         self.service.set_filters_options(self, new_df)
         return html.Div(style={"flexGrow": "2"}, children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
@@ -182,38 +197,49 @@ class AnalyticsComponent():
         ])
 
     def register_callbacks(self):
-        if(not self.df.empty):
-            @self.app.callback(
-                Output("filters", 'children'),
-                [Input('campaign_source', 'value'),
-                    Input('campaign_name', 'value'),
-                    Input('campaign_medium', 'value'),
-                    Input('by_date', 'start_date'),
-                    Input('by_date', 'end_date'),
-                 ])
-            def callback(campaign_source,
-                         campaign_name,
-                         campaign_medium,
-                         start_date,
-                         end_date):
-                if(not campaign_source and
-                   not campaign_name and
-                   not campaign_medium and
-                   not start_date and not end_date):
-                    self.set_default_filter()
-                if(campaign_source and len(campaign_source) >= 3):
-                    self.set_campaign_source_filter(
-                        campaign_source)
-                elif(campaign_name and len(campaign_name) >= 3):
-                    self.set_campaign_name_filter(
-                        campaign_name)
-                elif(campaign_medium and len(campaign_medium) >= 3):
-                    self.set_campaign_medium_filter(
-                        campaign_medium)
-                elif(start_date and end_date):
-                    self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
-                                                        datetime.datetime.fromisoformat(end_date).date())
-                return self.get_figure(self.df)
+        @self.app.callback(
+            Output("download_export", 'href'),
+            [Input('export_df', 'n_clicks')]
+        )
+        def export_callback(export_df):
+            dataAsCSV = self.df.to_csv()
+            urlToDownload = "data:text/csv;charset=utf-8," + \
+                urllib.parse.quote(dataAsCSV)
+            return urlToDownload
+
+        @self.app.callback(
+            Output("filters", 'children'),
+            [Input('campaign_source', 'value'),
+                Input('campaign_name', 'value'),
+                Input('campaign_medium', 'value'),
+                Input('by_date', 'start_date'),
+                Input('by_date', 'end_date'),
+             ])
+        def filter_callbacks(campaign_source,
+                             campaign_name,
+                             campaign_medium,
+                             start_date,
+                             end_date):
+            if(self.df.empty):
+                return
+            if(not campaign_source and
+               not campaign_name and
+               not campaign_medium and
+               not start_date and not end_date):
+                self.set_default_filter()
+            if(campaign_source and len(campaign_source) >= 3):
+                self.set_campaign_source_filter(
+                    campaign_source)
+            elif(campaign_name and len(campaign_name) >= 3):
+                self.set_campaign_name_filter(
+                    campaign_name)
+            elif(campaign_medium and len(campaign_medium) >= 3):
+                self.set_campaign_medium_filter(
+                    campaign_medium)
+            elif(start_date and end_date):
+                self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
+                                                    datetime.datetime.fromisoformat(end_date).date())
+            return self.get_figure(self.df)
 
     def set_default_filter(self):
         self.ej_users_count = len(self.df['email'].value_counts())
@@ -221,27 +247,24 @@ class AnalyticsComponent():
 
     def set_campaign_source_filter(self, campaign):
         analytics_filter = self.service.get_campaign_filter(campaign)
-        self.analytics_users_count = self.service.filter_by_analytics(
-            analytics_filter)
-        self.ej_users_count = int(
-            len(self.df[self.df['analytics_source']
-                        == campaign]['email'].value_counts()))
+        self.df = self.df[self.df['analytics_source'] == campaign]
+        self.count_users(analytics_filter)
 
     def set_campaign_name_filter(self, campaign):
         analytics_filter = self.service.get_name_filter(campaign)
-        self.analytics_users_count = self.service.filter_by_analytics(
-            analytics_filter)
-        self.ej_users_count = int(
-            len(self.df[self.df['analytics_campaign']
-                        == campaign]['email'].value_counts()))
+        self.df = self.df[self.df['analytics_campaign'] == campaign]
+        self.count_users(analytics_filter)
 
     def set_campaign_medium_filter(self, campaign):
         analytics_filter = self.service.get_medium_filter(campaign)
+        self.df = self.df[self.df['analytics_medium'] == campaign]
+        self.count_users(analytics_filter)
+
+    def count_users(self, analytics_filter):
         self.analytics_users_count = self.service.filter_by_analytics(
             analytics_filter)
         self.ej_users_count = int(
-            len(self.df[self.df['analytics_medium']
-                        == campaign]['email'].value_counts()))
+            len(self.df['email'].value_counts()))
 
     def set_campaign_date_range_filter(self, start_date, end_date):
         analytics_filter = self.service.get_date_filter(start_date, end_date)
