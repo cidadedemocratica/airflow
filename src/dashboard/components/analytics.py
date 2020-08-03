@@ -32,8 +32,8 @@ class AnalyticsComponent():
         try:
             self.set_default_filter()
             self.register_callbacks()
-        except:
-            pass
+        except Exception as err:
+            print(f"Error: {err}")
 
     def render(self):
         """
