@@ -33,8 +33,8 @@ class AnalyticsService():
         try:
             self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
             self.analytics_client = analytics.initialize_analyticsreporting()
-        except:
-            pass
+        except Exception as err:
+            print(f"Error: {err}")
 
     def filter_by_analytics(self, _filter):
         if (_filter == {}):
@@ -43,7 +43,7 @@ class AnalyticsService():
         return int(analytics_users)
 
     def get_default_filter(self):
-        # start from datetime.now - 60 days
+        # start from datetime.now - self.analytics_days_range days
         startDate = (datetime.datetime.now(datetime.timezone.utc) -
                      datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
         # include today on report
