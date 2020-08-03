@@ -11,6 +11,7 @@ from dateutil.tz import *
 import datetime
 from datetime import date
 from services.votes import VotesService
+from components.utils.export import ExportsComponent
 
 
 class VotesComponent():
@@ -22,6 +23,7 @@ class VotesComponent():
     def __init__(self, app):
         self.app = app
         self.service = VotesService()
+        self.export_component = ExportsComponent("votes")
         self.df = self.service.df
         self.utm_email_options = []
         self.utm_source_options = []
@@ -35,8 +37,9 @@ class VotesComponent():
         except:
             pass
 
-    def get_figure(self, df=pd.DataFrame({})):
-        df = self.service.set_filters_options(self, df)
+    def get_figure(self):
+        df = self.service.groupby(self.df)
+        self.service.set_filters_options(self)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
@@ -61,13 +64,17 @@ class VotesComponent():
                             'Aquisição Qualificada']),
                         html.Div(className="card-body", children=[
                             html.Div(style={"display": "flex"}, children=[
-                                self.get_filters(self.df),
+                                html.Div(children=[
+                                    self.get_filters_ui(),
+                                    html.Hr(),
+                                    self.export_component.render(),
+                                ]),
                                 html.Div(
                                     style={'flexGrow': 1, 'width': '50%'},
                                     children=[
                                         html.Div(id="analytics_filters",
                                                  children=[
-                                                     self.get_figure(self.df)]
+                                                     self.get_figure()]
                                                  )
                                     ]
                                 ),
@@ -87,8 +94,8 @@ class VotesComponent():
             ])
         ])
 
-    def get_filters(self, new_df):
-        self.service.set_filters_options(self, new_df)
+    def get_filters_ui(self):
+        self.service.set_filters_options(self)
         return html.Div(style={"flexGrow": "2"}, children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
@@ -156,6 +163,13 @@ class VotesComponent():
     def register_callbacks(self):
         if(not self.df.empty):
             @self.app.callback(
+                Output("votes_download_export", 'href'),
+                [Input('votes_exports_df', 'n_clicks')]
+            )
+            def export_callback(export_df):
+                return self.export_component.export(self.df)
+
+            @self.app.callback(
                 Output("analytics_filters", 'children'),
                 [Input('analytics_campaign_source', 'value'),
                     Input('analytics_campaign_name', 'value'),
@@ -164,20 +178,20 @@ class VotesComponent():
                     Input('votes_by_date', 'start_date'),
                     Input('votes_by_date', 'end_date'),
                  ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, analytics_campaign_email, start_date, end_date):
-                df = self.df
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
-                    df = self.service.filter_by_utm(
-                        df, 'analytics_source', analytics_campaign_source)
-                if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
-                    df = self.service.filter_by_utm(
-                        df, 'analytics_medium', analytics_campaign_medium)
-                if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
-                    df = self.service.filter_by_utm(
-                        df, 'analytics_campaign', analytics_campaign_name)
-                if(analytics_campaign_email and len(analytics_campaign_email) >= 3):
-                    df = self.service.filter_by_utm(
-                        df, 'email', analytics_campaign_email)
-                if(start_date or end_date):
-                    df = self.service.filter_by_date(start_date, end_date)
-                return self.get_figure(df)
+                    self.df = self.service.filter_by_utm(
+                        self.df, 'analytics_source', analytics_campaign_source)
+                elif(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
+                    self.df = self.service.filter_by_utm(
+                        self.df, 'analytics_medium', analytics_campaign_medium)
+                elif(analytics_campaign_name and len(analytics_campaign_name) >= 3):
+                    self.df = self.service.filter_by_utm(
+                        self.df, 'analytics_campaign', analytics_campaign_name)
+                elif(start_date or end_date):
+                    self.df = self.service.filter_by_date(
+                        start_date, end_date)
+                else:
+                    self.df = self.service.df
+
+                return self.get_figure()
