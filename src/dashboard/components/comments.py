@@ -14,7 +14,7 @@ class CommentsComponent():
         self.df = pd.DataFrame({})
         self.clusters = pd.DataFrame({})
         self.order_options = ['comentário_id',
-                              'concorda', 'discorda', 'pulados']
+                              'concorda', 'discorda', 'pulados', 'convergência']
         self.prepare()
         self.callbacks()
 
@@ -27,6 +27,7 @@ class CommentsComponent():
         self.df['discorda'] = self.df['discorda'].map(
             lambda x: x * 100)
         self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
+        self.df['participação'] = self.df['participação'].map(lambda x: x * 100)
         self.df['convergência'] = self.df['convergência'].map(
             lambda x: round(x * 100))
         self.df['geral'] = ''
@@ -93,7 +94,7 @@ class CommentsComponent():
     def _generate_table(self):
         ths = []
         for col in self.df.columns:
-            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
+            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados')):
                 ths.append(html.Th(col))
         return html.Table(className="comments-table", children=[
             html.Thead(
@@ -122,7 +123,7 @@ class CommentsComponent():
                     col, df, index)
                 if(comments_columns):
                     tds.append(html.Td(comments_columns))
-                elif(col in ["autor", "comentário", "comentário_id"]):
+                elif(col in ["autor", "comentário", "comentário_id", "participação"]):
                     tds.append(
                         html.Td(children=[df.iloc[index][col]]))
             trs.append(html.Tr(tds))
@@ -190,6 +191,10 @@ class CommentsComponent():
             children=[
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="ID da Conversa:"),
+                ]),
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Participação acima de:"),
                     dcc.Input(
                         id='participation',
@@ -197,7 +202,7 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
-                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'margin-bottom' : '18px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Ordenar por:"),
                     dcc.Dropdown(
