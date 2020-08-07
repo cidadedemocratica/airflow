@@ -23,6 +23,7 @@ class VotesComponent():
         self.app = app
         self.service = VotesService()
         self.df = self.service.df
+        self.utm_email_options = []
         self.utm_source_options = []
         self.utm_medium_options = []
         self.utm_campaign_options = []
@@ -126,6 +127,18 @@ class VotesComponent():
                     ),
                 ])
                 ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children="utm_email:"),
+                    dcc.Dropdown(
+                        id='analytics_campaign_email',
+                        options=[{'label': i, 'value': i}
+                                 for i in self.utm_email_options],
+                        value='',
+                        style={"flexGrow": 1}
+                    ),
+                ])
+                ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Período"),
@@ -146,10 +159,11 @@ class VotesComponent():
                 [Input('analytics_campaign_source', 'value'),
                     Input('analytics_campaign_name', 'value'),
                     Input('analytics_campaign_medium', 'value'),
+                    Input('analytics_campaign_email', 'value'),
                     Input('votes_by_date', 'start_date'),
                     Input('votes_by_date', 'end_date'),
                  ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, analytics_campaign_email, start_date, end_date):
                 df = self.df
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     df = self.service.filter_by_utm(
@@ -160,6 +174,9 @@ class VotesComponent():
                 if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
                     df = self.service.filter_by_utm(
                         df, 'analytics_campaign', analytics_campaign_name)
+                if(analytics_campaign_email and len(analytics_campaign_email) >= 3):
+                    df = self.service.filter_by_utm(
+                        df, 'email', analytics_campaign_email)
                 if(start_date or end_date):
                     df = self.service.filter_by_date(start_date, end_date)
                 return self.get_figure(df)
