@@ -194,6 +194,20 @@ class CommentsComponent():
                         html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[2]))) + '%'),
                     ]),
+                    html.Div(className='comment-bar', children=[
+                        html.Div(style={
+                            'backgroundColor': '#16ab39', 'width': round(float(cluster_votes_statistics[0]) + 
+                                float(cluster_votes_statistics[1])), 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': '#042a46', 'width': round(float(cluster_votes_statistics[2])), 'height': 20}),
+                    ]),
+                    html.Div(style={}, children=[
+                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                            round(float(cluster_votes_statistics[0]) + float(cluster_votes_statistics[1]))) + '%'),
+                        html.Span(style={'color': '042a46', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                            round(float(cluster_votes_statistics[2]))) + '%'),
+                    ]),
+
                 ],
             )
             return bar
