@@ -30,24 +30,25 @@ class VotesService():
         except:
             pass
 
-    def set_filters_options(self, component, df=pd.DataFrame({})):
+    def set_filters_options(self, component):
+        component.utm_source_options = self.df['analytics_source'].value_counts(
+        ).keys()
+        component.utm_medium_options = self.df['analytics_medium'].value_counts(
+        ).keys()
+        component.utm_campaign_options = self.df['analytics_campaign'].value_counts(
+        ).keys()
+
+    def groupby(self, df):
         if(df.empty):
-            return df
-        df = df.groupby(['email',
-                         'analytics_campaign',
-                         'analytics_source',
-                         'analytics_medium']) \
+            df = self.df
+        return df.groupby(['email',
+                           'analytics_campaign',
+                           'analytics_source',
+                           'analytics_medium']) \
             .count().reset_index(level=0).reset_index(level=0) \
             .reset_index(level=0) \
             .reset_index(level=0) \
             .sort_values(by='criado', ascending=False)
-        component.utm_source_options = df['analytics_source'].value_counts(
-        ).keys()
-        component.utm_medium_options = df['analytics_medium'].value_counts(
-        ).keys()
-        component.utm_campaign_options = df['analytics_campaign'].value_counts(
-        ).keys()
-        return df
 
     def filter_by_date(self, start_date, end_date):
         if(start_date and end_date):
