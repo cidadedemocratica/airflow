@@ -94,7 +94,7 @@ class CommentsComponent():
     def _generate_table(self):
         ths = []
         for col in self.df.columns:
-            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados')):
+            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
                 ths.append(html.Th(col))
         return html.Table(className="comments-table", children=[
             html.Thead(
@@ -123,7 +123,8 @@ class CommentsComponent():
                     col, df, index)
                 if(comments_columns):
                     tds.append(html.Td(comments_columns))
-                elif(col in ["autor", "comentário", "comentário_id", "participação"]):
+                    
+                elif(col in ["autor", "comentário", "comentário_id"]):
                     tds.append(
                         html.Td(children=[df.iloc[index][col]]))
             trs.append(html.Tr(tds))
@@ -150,12 +151,24 @@ class CommentsComponent():
                         html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['pulados'])) + '%'),
                     ]),
+                    html.Div(className='comment-bar', children=[
+                        html.Div(style={
+                            'backgroundColor': '#16ab39', 'width': df.iloc[index]['concorda'] + df.iloc[index]['discorda'], 'height': 20}),
+                        html.Div(style={
+                            'backgroundColor': '#042a46', 'width': df.iloc[index]['pulados'], 'height': 20}),
+                    ]),
+                    html.Div(style={}, children=[
+                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                            round(df.iloc[index]['concorda'] + df.iloc[index]['discorda'])) + '%'),
+                        html.Span(style={'color': '042a46', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                            round(df.iloc[index]['pulados'])) + '%'),
+                    ]),
                 ],
             )
             return dom_element
         else:
             return None
-
+    
     def _generate_clusters_columns(self, col, df, index):
         clusters_names = self.clusters.cluster.value_counts().keys()
         clusters_names = clusters_names.map(
@@ -191,7 +204,7 @@ class CommentsComponent():
             children=[
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="ID da Conversa:"),
+                              children="ID da Conversa: 45"),
                 ]),
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
