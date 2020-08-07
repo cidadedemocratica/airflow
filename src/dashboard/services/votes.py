@@ -41,6 +41,7 @@ class VotesService():
             .reset_index(level=0) \
             .reset_index(level=0) \
             .sort_values(by='criado', ascending=False)
+        component.utm_email_options = df['email'].value_counts().keys()
         component.utm_source_options = df['analytics_source'].value_counts(
         ).keys()
         component.utm_medium_options = df['analytics_medium'].value_counts(
