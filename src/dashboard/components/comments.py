@@ -128,14 +128,15 @@ class CommentsComponent():
                     ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
-                            'backgroundColor': '#16ab39', 'width': df.iloc[index]['concorda'] + df.iloc[index]['discorda'], 'height': 20}),
+                            'backgroundColor': '#30bfd3', 'width': df.iloc[index]['concorda'] + df.iloc[index]['discorda'], 'height': 20,
+                                'opacity': '90%'}),
                         html.Div(style={
-                            'backgroundColor': '#042a46', 'width': df.iloc[index]['pulados'], 'height': 20}),
+                            'backgroundColor': '#858796', 'width': df.iloc[index]['pulados'], 'height': 20, 'opacity': '56%'}),
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                        html.Span(style={'color': '#30bfd3', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['concorda'] + df.iloc[index]['discorda'])) + '%'),
-                        html.Span(style={'color': '042a46', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                        html.Span(style={'color': '#858796', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(df.iloc[index]['pulados'])) + '%'),
                     ]),
                 ],
@@ -168,15 +169,16 @@ class CommentsComponent():
                     ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
-                            'backgroundColor': '#16ab39', 'width': round(float(cluster_votes_statistics[0]) + 
-                                float(cluster_votes_statistics[1])), 'height': 20}),
+                            'backgroundColor': '#30bfd3', 'width': round(float(cluster_votes_statistics[0]) + 
+                                float(cluster_votes_statistics[1])), 'height': 20, 'opacity': '90%'}),
                         html.Div(style={
-                            'backgroundColor': '#042a46', 'width': round(float(cluster_votes_statistics[2])), 'height': 20}),
+                            'backgroundColor': '#858796', 'width': round(float(cluster_votes_statistics[2])), 'height': 20,
+                                'opacity': '56%'}),
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                        html.Span(style={'color': '#30bfd3', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[0]) + float(cluster_votes_statistics[1]))) + '%'),
-                        html.Span(style={'color': '042a46', 'fontSize': '11px', 'marginRight': '5ax'}, children=str(
+                        html.Span(style={'color': '#858796', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
                             round(float(cluster_votes_statistics[2]))) + '%'),
                     ]),
 
@@ -197,8 +199,8 @@ class CommentsComponent():
                               children="Participação acima de:"),
                     dcc.Input(
                         id='participation',
+                        type = 'number',
                         value='50',
-                        style={"flexGrow": 1}
                     ),
                 ]),
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'margin-bottom' : '18px', 'alignItems': 'center', 'width': '30%'}, children=[
