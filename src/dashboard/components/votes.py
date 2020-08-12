@@ -144,6 +144,7 @@ class VotesComponent():
                               children="Período"),
                     dcc.DatePickerRange(
                         id='votes_by_date',
+                        clearable=True,
                         style={"flexGrow": 1},
                     ),
                 ])
