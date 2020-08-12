@@ -201,9 +201,9 @@ class CommentsComponent():
                         id='participation',
                         type = 'number',
                         value='50',
-                    ),
+                        style={"flexGrow": 1, 'color': '#aaa', 'padding': '6px', 'opacity': '60%'}                    ),
                 ]),
-                html.Div(style={'display': 'flex', 'marginTop': '10px', 'margin-bottom' : '18px', 'alignItems': 'center', 'width': '30%'}, children=[
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'marginBottom' : '18px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Ordenar por:"),
                     dcc.Dropdown(
