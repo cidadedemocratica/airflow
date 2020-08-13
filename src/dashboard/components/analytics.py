@@ -122,6 +122,7 @@ class AnalyticsComponent():
                               children="Período:"),
                     dcc.DatePickerRange(
                         id='by_date',
+                        clearable=True,
                         style={"flexGrow": 1},
                     ),
                 ])
