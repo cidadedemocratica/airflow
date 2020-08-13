@@ -178,7 +178,7 @@ class VotesComponent():
                     Input('votes_by_date', 'start_date'),
                     Input('votes_by_date', 'end_date'),
                  ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, start_date, end_date):
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, analytics_campaign_email, start_date, end_date):
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_source', analytics_campaign_source)
@@ -188,6 +188,9 @@ class VotesComponent():
                 elif(analytics_campaign_name and len(analytics_campaign_name) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_campaign', analytics_campaign_name)
+                elif( analytics_campaign_email and len (analytics_campaign_email) >= 3):
+                    self.df = self.service.filter_by_utm(
+                        self.df, ' analytics_campaign_email',  analytics_campaign_email)
                 elif(start_date or end_date):
                     self.df = self.service.filter_by_date(
                         start_date, end_date)
