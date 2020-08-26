@@ -98,7 +98,7 @@ class CommentsComponent():
                     col, df, index)
                 if(comments_columns):
                     tds.append(html.Td(comments_columns))
-                    
+
                 elif(col in ["autor", "comentário", "comentário_id"]):
                     tds.append(
                         html.Td(children=[df.iloc[index][col]]))
@@ -129,7 +129,7 @@ class CommentsComponent():
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
                             'backgroundColor': '#30bfd3', 'width': df.iloc[index]['concorda'] + df.iloc[index]['discorda'], 'height': 20,
-                                'opacity': '90%'}),
+                            'opacity': '90%'}),
                         html.Div(style={
                             'backgroundColor': '#858796', 'width': df.iloc[index]['pulados'], 'height': 20, 'opacity': '56%'}),
                     ]),
@@ -144,7 +144,7 @@ class CommentsComponent():
             return dom_element
         else:
             return None
-    
+
     def _generate_clusters_columns(self, col, df, index):
         if(col in CommentsService._get_clusters_name(self)):
             cluster_votes_statistics = df.iloc[index][col].split(',')
@@ -169,11 +169,11 @@ class CommentsComponent():
                     ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
-                            'backgroundColor': '#30bfd3', 'width': round(float(cluster_votes_statistics[0]) + 
-                                float(cluster_votes_statistics[1])), 'height': 20, 'opacity': '90%'}),
+                            'backgroundColor': '#30bfd3', 'width': round(float(cluster_votes_statistics[0]) +
+                                                                         float(cluster_votes_statistics[1])), 'height': 20, 'opacity': '90%'}),
                         html.Div(style={
                             'backgroundColor': '#858796', 'width': round(float(cluster_votes_statistics[2])), 'height': 20,
-                                'opacity': '56%'}),
+                            'opacity': '56%'}),
                     ]),
                     html.Div(style={}, children=[
                         html.Span(style={'color': '#30bfd3', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
@@ -199,11 +199,11 @@ class CommentsComponent():
                               children="Participação acima de:"),
                     dcc.Input(
                         id='participation',
-                        type = 'number',
+                        type='number',
                         value='50',
-                        style={"flexGrow": 1, 'color': '#aaa', 'padding': '6px', 'opacity': '60%'}                    ),
+                        style={"flexGrow": 1, 'color': '#aaa', 'padding': '6px', 'opacity': '60%'}),
                 ]),
-                html.Div(style={'display': 'flex', 'marginTop': '10px', 'marginBottom' : '18px', 'alignItems': 'center', 'width': '30%'}, children=[
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '18px', 'alignItems': 'center', 'width': '30%'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="Ordenar por:"),
                     dcc.Dropdown(
@@ -217,4 +217,3 @@ class CommentsComponent():
                 html.Div(style={'maxWidth': '100vw', 'overflow': 'scroll', 'maxHeight': '600px'},  children=[
                          self._generate_table()])
             ])
-

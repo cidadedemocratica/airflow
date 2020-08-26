@@ -6,36 +6,38 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
+
 class CommentsService():
     """
         CommnetsService represents a object controls CommentsComponent data.
-    """    
+    """
 
     def __init__(self):
         self.df = pd.DataFrame({})
         self.clusters = pd.DataFrame({})
         self.prepare()
-    
+
     def prepare(self):
         try:
             self.df = pd.read_json('/tmp/comments.json')
+            self.df = pd.DataFrame(data=self.df, columns=[
+                'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
+            self.df['concorda'] = self.df['concorda'].map(
+                lambda x: x * 100)
+            self.df['discorda'] = self.df['discorda'].map(
+                lambda x: x * 100)
+            self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
+            self.df['participação'] = self.df['participação'].map(
+                lambda x: x * 100)
+            self.df['convergência'] = self.df['convergência'].map(
+                lambda x: round(x * 100))
+            self.df['geral'] = ''
+            for index, value in enumerate(self.df['geral']):
+                self.df.loc[index,
+                            'geral'] = f"{self.df.loc[index, 'concorda']}, {self.df.loc[index, 'discorda']}, {self.df.loc[index, 'pulados']}"
+            self._merge_clusters_data()
         except:
             pass
-        self.df = pd.DataFrame(data=self.df, columns=[
-            'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
-        self.df['concorda'] = self.df['concorda'].map(
-            lambda x: x * 100)
-        self.df['discorda'] = self.df['discorda'].map(
-            lambda x: x * 100)
-        self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
-        self.df['participação'] = self.df['participação'].map(lambda x: x * 100)
-        self.df['convergência'] = self.df['convergência'].map(
-            lambda x: round(x * 100))
-        self.df['geral'] = ''
-        for index, value in enumerate(self.df['geral']):
-            self.df.loc[index,
-                        'geral'] = f"{self.df.loc[index, 'concorda']}, {self.df.loc[index, 'discorda']}, {self.df.loc[index, 'pulados']}"
-        self._merge_clusters_data()
 
     def _merge_clusters_data(self):
         self.clusters = pd.read_json('/tmp/clusters.json')
