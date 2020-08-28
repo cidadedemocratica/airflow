@@ -65,7 +65,7 @@ class AnalyticsService():
                     "dimensions": [{
                         "name": "ga:pagePath"
                     }],
-                    "filtersExpression": f"ga:pagePath==/opiniao/"
+                    "filtersExpression": f"ga:pagePath=@/testeopiniao/,ga:pagePath=@/opiniao/"
                 }
             ],
             "useResourceQuotas": False
