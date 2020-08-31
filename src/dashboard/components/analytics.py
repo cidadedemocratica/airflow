@@ -23,6 +23,7 @@ class AnalyticsComponent():
     def __init__(self, app):
         self.app = app
         self.service = AnalyticsService()
+        self.url_destination = self.service.page_path
         self.export_component = ExportsComponent("analytics")
         self.df = self.service.df
         self.ej_users_count = 1
@@ -83,6 +84,11 @@ class AnalyticsComponent():
         self.service.set_filters_options(self, new_df)
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children=f"url_destination: {(self.url_destination).replace('ga:pagePath=@', ' ')}"),
+                    ])
+                ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="utm_source:"),
