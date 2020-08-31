@@ -194,10 +194,7 @@ class AnalyticsService():
         }
 
     def get_analytics_new_users(self, _filter):
-        print("ANALYTICS_USERS")
         response = analytics.get_report(self.analytics_client, _filter)
-        print(response)
-        print("ANALYTICS_USERS")
         return self.parse_report(response)
 
     def parse_report(self, reports):

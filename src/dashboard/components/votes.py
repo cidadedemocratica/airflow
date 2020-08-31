@@ -63,21 +63,18 @@ class VotesComponent():
                         html.Div(className="card-header", children=[
                             'Aquisição Qualificada']),
                         html.Div(className="card-body", children=[
-                            html.Div(style={"display": "flex"}, children=[
-                                html.Div(children=[
+                            html.Div(style={"display": "flex", "width": "90%"}, children=[
+                                html.Div(style={"flexGrow": "1"}, children=[
                                     self.get_filters_ui(),
                                     html.Hr(),
                                     self.export_component.render(),
                                 ]),
-                                html.Div(
-                                    style={'flexGrow': 1, 'width': '50%'},
-                                    children=[
-                                        html.Div(id="analytics_filters",
-                                                 children=[
-                                                     self.get_figure()]
-                                                 )
-                                    ]
-                                ),
+                                dcc.Loading(id="votes_loader", type="default", color="#30bfd3", children=[
+                                    html.Div(id="votes_filters",
+                                             style={"flexGrow": 1, "width": "60%"}, children=[
+                                                 self.get_figure()
+                                             ])
+                                ])
                             ])
                         ])
                     ])
@@ -96,7 +93,7 @@ class VotesComponent():
 
     def get_filters_ui(self):
         self.service.set_filters_options(self)
-        return html.Div(style={"flexGrow": "2"}, children=[
+        return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
@@ -170,7 +167,7 @@ class VotesComponent():
                 return self.export_component.export(self.df)
 
             @self.app.callback(
-                Output("analytics_filters", 'children'),
+                Output("votes_loader", 'children'),
                 [Input('analytics_campaign_source', 'value'),
                     Input('analytics_campaign_name', 'value'),
                     Input('analytics_campaign_medium', 'value'),
@@ -179,6 +176,7 @@ class VotesComponent():
                     Input('votes_by_date', 'end_date'),
                  ])
             def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, analytics_campaign_email, start_date, end_date):
+                self.df = self.service.df
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_source', analytics_campaign_source)
@@ -188,13 +186,11 @@ class VotesComponent():
                 elif(analytics_campaign_name and len(analytics_campaign_name) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_campaign', analytics_campaign_name)
-                elif( analytics_campaign_email and len (analytics_campaign_email) >= 3):
+                elif(analytics_campaign_email and len(analytics_campaign_email) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, ' analytics_campaign_email',  analytics_campaign_email)
                 elif(start_date or end_date):
                     self.df = self.service.filter_by_date(
                         start_date, end_date)
-                else:
-                    self.df = self.service.df
 
                 return self.get_figure()

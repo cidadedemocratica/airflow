@@ -57,8 +57,8 @@ class AnalyticsComponent():
                                     html.Hr(),
                                     self.export_component.render(),
                                 ]),
-                                dcc.Loading(id="loader", type="default", color="#30bfd3", children=[
-                                    html.Div(id="filters",
+                                dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
+                                    html.Div(id="analytics_filters",
                                              style={"flexGrow": 1, "width": "60%"}, children=[
                                                  self.get_figure(self.df)
                                              ])
@@ -213,7 +213,7 @@ class AnalyticsComponent():
             return self.export_component.export(self.df)
 
         @ self.app.callback(
-            Output("loader", 'children'),
+            Output("analytics_loader", 'children'),
             [Input('campaign_source', 'value'),
                 Input('campaign_name', 'value'),
                 Input('campaign_medium', 'value'),
@@ -225,8 +225,6 @@ class AnalyticsComponent():
                              campaign_medium,
                              start_date,
                              end_date):
-            print("CALLBACK")
-            print(self.df.info)
             if(self.df.empty):
                 return
             self.set_default_filter()
