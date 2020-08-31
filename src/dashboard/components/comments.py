@@ -7,6 +7,7 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
 from services.comments import CommentsService
+from components.utils.export import ExportsComponent
 
 
 class CommentsComponent():
@@ -14,6 +15,7 @@ class CommentsComponent():
     def __init__(self, app):
         self.app = app
         self.service = CommentsService()
+        self.export_component = ExportsComponent("comments")
         self.df = self.service.df
         self.clusters = self.service.clusters
         self.order_options = ['comentário_id',
@@ -28,6 +30,13 @@ class CommentsComponent():
 
     def callbacks(self):
         if(not self.df.empty):
+            @ self.app.callback(
+                Output("comments_download_export", 'href'),
+                [Input("comments_exports_df", 'n_clicks')]
+            )
+            def export_callback(export_df):
+                return self.export_component.export(self.df)
+
             @ self.app.callback(
                 Output("table_body", 'children'),
                 [Input('_filter', 'value'), Input('participation', 'value')])
@@ -49,7 +58,9 @@ class CommentsComponent():
                             'Votos e participação em todos os comentários.']),
                         html.Div(className="card-body", children=[
                             html.Div(children=[
-                                self._get_table()
+                                self._get_table(),
+                                html.Hr(),
+                                self.export_component.render(),
                             ])
                         ])
                     ])
