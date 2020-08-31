@@ -22,7 +22,8 @@ class AnalyticsService():
         self.df = pd.DataFrame({})
         # analytics view id
         self.view_id = "215248741"
-        self.analytics_days_range = 240
+        self.analytics_days_range = 30
+        self.page_path = "ga:pagePath=@/testeopiniao/,ga:pagePath=@/opiniao/"
         self.prepare()
 
     def prepare(self):
@@ -65,7 +66,7 @@ class AnalyticsService():
                     "dimensions": [{
                         "name": "ga:pagePath"
                     }],
-                    "filtersExpression": f"ga:pagePath=@/testeopiniao/,ga:pagePath=@/opiniao/"
+                    "filtersExpression": self.page_path
                 }
             ],
             "useResourceQuotas": False
@@ -90,7 +91,7 @@ class AnalyticsService():
                     "dimensions": [{
                         "name": "ga:pagePath"
                     }],
-                    "filtersExpression": f"ga:pagePath==/opiniao/"
+                    "filtersExpression": self.page_path
                 }
             ],
             "useResourceQuotas": False
@@ -122,7 +123,7 @@ class AnalyticsService():
                         {
                         "name": "ga:source"
                     }],
-                    "filtersExpression": f"ga:pagePath==/opiniao/;ga:source=={campaign}"
+                    "filtersExpression": f"{self.page_path};ga:source=={campaign}"
                 }
             ],
             "useResourceQuotas": False
@@ -154,7 +155,7 @@ class AnalyticsService():
                         {
                         "name": "ga:campaign"
                     }],
-                    "filtersExpression": f"ga:pagePath==/opiniao/;ga:campaign=={campaign_name}"
+                    "filtersExpression": f"{self.page_path};ga:campaign=={campaign_name}"
                 }
             ],
             "useResourceQuotas": False
@@ -186,14 +187,17 @@ class AnalyticsService():
                         {
                         "name": "ga:medium"
                     }],
-                    "filtersExpression": f"ga:pagePath==/opiniao/;ga:medium=={campaign_medium}"
+                    "filtersExpression": f"{self.page_path};ga:medium=={campaign_medium}"
                 }
             ],
             "useResourceQuotas": False
         }
 
     def get_analytics_new_users(self, _filter):
+        print("ANALYTICS_USERS")
         response = analytics.get_report(self.analytics_client, _filter)
+        print(response)
+        print("ANALYTICS_USERS")
         return self.parse_report(response)
 
     def parse_report(self, reports):

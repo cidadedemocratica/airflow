@@ -51,16 +51,18 @@ class AnalyticsComponent():
                         html.Div(className="card-header", children=[
                             'Engajamento vs Aquisição (EJ)']),
                         html.Div(className="card-body", children=[
-                            html.Div(style={"display": "flex"}, children=[
-                                html.Div(children=[
+                            html.Div(style={"display": "flex", "width": "90%"}, children=[
+                                html.Div(style={"flexGrow": "1"}, children=[
                                     self.get_filters_ui(self.df),
                                     html.Hr(),
                                     self.export_component.render(),
                                 ]),
-                                html.Div(id="filters",
-                                         style={"flexGrow": 1, "width": "60%"}, children=[
-                                            self.get_figure(self.df)
-                                         ])
+                                dcc.Loading(id="loader", type="default", color="#30bfd3", children=[
+                                    html.Div(id="filters",
+                                             style={"flexGrow": 1, "width": "60%"}, children=[
+                                                 self.get_figure(self.df)
+                                             ])
+                                ])
                             ])
                         ])
                     ])
@@ -79,7 +81,7 @@ class AnalyticsComponent():
 
     def get_filters_ui(self, new_df):
         self.service.set_filters_options(self, new_df)
-        return html.Div(style={"flexGrow": "2"}, children=[
+        return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
@@ -129,6 +131,14 @@ class AnalyticsComponent():
                 ]),
             ])
         ],
+        )
+
+    def get_loading(self, is_loading=False):
+        return dcc.Loading(
+            id="loading-1",
+            type="default",
+            children=html.Div(id="loading-output-1"),
+            loading_state={'is_loading': is_loading}
         )
 
     def get_figure(self, df=pd.DataFrame({})):
@@ -186,6 +196,11 @@ class AnalyticsComponent():
         )
         )
         return html.Div(children=[
+            dcc.Loading(
+                id="loading-2",
+                children=[html.Div([html.Div(id="loading-output-2")])],
+                type="circle",
+            ),
             dcc.Graph(figure=fig)
         ])
 
@@ -197,8 +212,8 @@ class AnalyticsComponent():
         def export_callback(export_df):
             return self.export_component.export(self.df)
 
-        @self.app.callback(
-            Output("filters", 'children'),
+        @ self.app.callback(
+            Output("loader", 'children'),
             [Input('campaign_source', 'value'),
                 Input('campaign_name', 'value'),
                 Input('campaign_medium', 'value'),
@@ -210,13 +225,11 @@ class AnalyticsComponent():
                              campaign_medium,
                              start_date,
                              end_date):
+            print("CALLBACK")
+            print(self.df.info)
             if(self.df.empty):
                 return
-            if(not campaign_source and
-               not campaign_name and
-               not campaign_medium and
-               not start_date and not end_date):
-                self.set_default_filter()
+            self.set_default_filter()
             if(campaign_source and len(campaign_source) >= 3):
                 self.set_campaign_source_filter(
                     campaign_source)
@@ -227,11 +240,12 @@ class AnalyticsComponent():
                 self.set_campaign_medium_filter(
                     campaign_medium)
             elif(start_date and end_date):
-                self.set_campaign_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
-                                                    datetime.datetime.fromisoformat(end_date).date())
+                self.set_date_range_filter(datetime.datetime.fromisoformat(start_date).date(),
+                                           datetime.datetime.fromisoformat(end_date).date())
             return self.get_figure(self.df)
 
     def set_default_filter(self):
+        self.df = self.service.df
         self.ej_users_count = len(self.df['email'].value_counts())
         self.analytics_users_count = self.service.filter_by_analytics({})
 
@@ -256,7 +270,7 @@ class AnalyticsComponent():
         self.ej_users_count = int(
             len(self.df['email'].value_counts()))
 
-    def set_campaign_date_range_filter(self, start_date, end_date):
+    def set_date_range_filter(self, start_date, end_date):
         analytics_filter = self.service.get_date_filter(start_date, end_date)
         self.analytics_users_count = self.service.filter_by_analytics(
             analytics_filter)
