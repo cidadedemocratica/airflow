@@ -25,7 +25,6 @@ class VotesComponent():
         self.service = VotesService()
         self.export_component = ExportsComponent("votes")
         self.df = self.service.df
-        self.utm_email_options = []
         self.utm_source_options = []
         self.utm_medium_options = []
         self.utm_campaign_options = []
@@ -34,12 +33,12 @@ class VotesComponent():
     def prepare(self):
         try:
             self.register_callbacks()
+            self.service.set_filters_options(self)
         except:
             pass
 
     def get_figure(self):
         df = self.service.groupby(self.df)
-        self.service.set_filters_options(self)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
@@ -133,12 +132,12 @@ class VotesComponent():
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_email:"),
-                    dcc.Dropdown(
-                        id='analytics_campaign_email',
-                        options=[{'label': i, 'value': i}
-                                 for i in self.utm_email_options],
-                        value='',
+                              children="emails válidos?: "),
+                    dcc.Checklist(
+                        id='email',
+                        options=[
+                            {'label':  '', 'value': 'is_valid'}],
+                        value=['is_valid'],
                         style={"flexGrow": 1}
                     ),
                 ])
@@ -171,11 +170,11 @@ class VotesComponent():
                 [Input('analytics_campaign_source', 'value'),
                     Input('analytics_campaign_name', 'value'),
                     Input('analytics_campaign_medium', 'value'),
-                    Input('analytics_campaign_email', 'value'),
+                    Input('email', 'value'),
                     Input('votes_by_date', 'start_date'),
                     Input('votes_by_date', 'end_date'),
                  ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, analytics_campaign_email, start_date, end_date):
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date):
                 self.df = self.service.df
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(
@@ -186,9 +185,8 @@ class VotesComponent():
                 elif(analytics_campaign_name and len(analytics_campaign_name) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_campaign', analytics_campaign_name)
-                elif(analytics_campaign_email and len(analytics_campaign_email) >= 3):
-                    self.df = self.service.filter_by_utm(
-                        self.df, ' analytics_campaign_email',  analytics_campaign_email)
+                elif(email == ['is_valid']):
+                    self.df = self.service.filter_by_email(self.df)
                 elif(start_date or end_date):
                     self.df = self.service.filter_by_date(
                         start_date, end_date)

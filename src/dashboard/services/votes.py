@@ -41,13 +41,8 @@ class VotesService():
     def groupby(self, df):
         if(df.empty):
             df = self.df
-        return df.groupby(['email',
-                           'analytics_campaign',
-                           'analytics_source',
-                           'analytics_medium']) \
-            .count().reset_index(level=0).reset_index(level=0) \
-            .reset_index(level=0) \
-            .reset_index(level=0) \
+        return df.groupby(['email']) \
+            .count().reset_index(level=0) \
             .sort_values(by='criado', ascending=False)
 
     def filter_by_date(self, start_date, end_date):
@@ -77,3 +72,8 @@ class VotesService():
             partial_df = df[df['criado'].map(
                 lambda x: parse(x).date() <= last_day)]
             return pd.DataFrame(partial_df)
+
+    def filter_by_email(self, df):
+        filterd_df = df[df['email'].map(
+            lambda email: 'mautic@mail.com' not in email)]
+        return filterd_df
