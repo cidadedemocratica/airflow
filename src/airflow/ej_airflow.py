@@ -42,21 +42,22 @@ t2 = EjApiOperator(
     log_response=True,
     dag=dag)
 
-t2 = EjApiOperator(
+t3 = EjApiOperator(
     task_id="request_conversation_clusters",
     conversation_id=56,
     data_type="clusters",
     log_response=True,
     dag=dag)
 
-t3 = MauticApiOperator(
+t4 = MauticApiOperator(
     task_id="merge_votes_and_contacts",
     log_response=True,
     dag=dag)
 
-t4 = AnalyticsApiOperator(
+t5 = AnalyticsApiOperator(
     task_id="merge_with_analytics",
     log_response=True,
     dag=dag)
 
-[t1, t2] >> t3 >> t4
+[t1, t2, t3]
+t1 >> [t4, t5]

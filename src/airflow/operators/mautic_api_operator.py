@@ -31,25 +31,28 @@ class MauticApiOperator(BaseOperator):
         self.votes_df = pd.read_json('/tmp/votes.json')
 
     def merge_votes_and_contacts(self):
-        votes_with_mautic = pd.DataFrame(self.votes_df)
-        votes_with_mautic['mtc_email'] = ''
-        votes_with_mautic['mtc_first_name'] = ''
-        votes_with_mautic['mtc_last_name'] = ''
-        votes_with_mautic['gid'] = ''
-        uniq_emails = votes_with_mautic.groupby(
+        votes = pd.DataFrame(self.votes_df)
+        votes['mtc_email'] = ''
+        votes['mtc_first_name'] = ''
+        votes['mtc_last_name'] = ''
+        uniq_emails = votes.groupby(
             'email').count().reset_index(level=0)
         print(
             f'Airflow will request {len(uniq_emails)} contacts on mautic api')
         for counter, row in enumerate(uniq_emails.loc()):
-            mtc_id = self.helper.get_mtc_id_from_email(row["email"])
-            if(mtc_id):
-                mtc_contact = self._get_contact(mtc_id)
-                votes_with_mautic = self.helper.merge(
-                    votes_with_mautic, mtc_contact, row["email"])
-            print(f'{counter} requests made. Contact {row["email"]}')
-            if(counter == len(uniq_emails) - 1):
-                break
-        return votes_with_mautic
+            #mtc_id = self.helper.get_mtc_id_from_email(row["email"])
+            try:
+                mtc_id = str(int(row["author__metadata__mautic_id"]))
+                if(mtc_id):
+                    mtc_contact = self._get_contact(mtc_id)
+                    votes = self.helper.merge(
+                        votes, mtc_contact, row["email"])
+                print(f'{counter} requests made. Contact {row["email"]}')
+                if(counter == len(uniq_emails) - 1):
+                    break
+            except:
+                pass
+        return votes
 
     def _get_contact(self, mtc_id):
         url = self._get_url(mtc_id)

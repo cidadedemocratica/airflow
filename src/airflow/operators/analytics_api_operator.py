@@ -20,7 +20,7 @@ class AnalyticsApiOperator(BaseOperator):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         try:
-            self.votes_df = pd.read_json('/tmp/votes_and_mautic.json')
+            self.votes_df = pd.read_json('/tmp/votes.json')
         except:
             pass
         self.helper = helper.OperatorHelper()
@@ -45,10 +45,10 @@ class AnalyticsApiOperator(BaseOperator):
     def merge_with_analytics(self):
         self.votes_dataframe = pd.DataFrame(self.votes_df)
         gids = pd.DataFrame(self.votes_df).groupby(
-            'gid').count().reset_index(level=0)
+            'author__metadata__analytics_id').count().reset_index(level=0)
 
         for counter, row in enumerate(gids.loc()):
-            gid = row["gid"]
+            gid = row["author__metadata__analytics_id"]
             if(not gid or gid == '1'):
                 continue
             self.helper.wait_analytics_quota(counter, "votes")

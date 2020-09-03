@@ -15,12 +15,9 @@ class OperatorHelper():
         mautic_email = contact["fields"]["all"]["email"]
         first_name = contact["fields"]["all"]["firstname"]
         last_name = contact["fields"]["all"]["lastname"]
-        gid = contact["fields"]["all"]["gid"]
         df.loc[df['email'] == email, 'mtc_email'] = mautic_email
         df.loc[df['email'] == email, 'mtc_first_name'] = first_name
         df.loc[df['email'] == email, 'mtc_last_name'] = last_name
-        if(gid):
-            df.loc[df['email'] == email, 'gid'] = gid
         return df
 
     def get_email_sufix(self, email):
