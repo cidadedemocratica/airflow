@@ -24,18 +24,18 @@ class VotesComponent():
         self.app = app
         self.service = VotesService()
         self.export_component = ExportsComponent("votes")
-        self.df = self.service.df
-        self.utm_source_options = []
-        self.utm_medium_options = []
-        self.utm_campaign_options = []
         self.prepare()
 
     def prepare(self):
         try:
+            self.df = self.service.df
+            self.utm_source_options = []
+            self.utm_medium_options = []
+            self.utm_campaign_options = []
             self.register_callbacks()
             self.service.set_filters_options(self)
-        except:
-            pass
+        except Exception as err:
+            print(err)
 
     def get_figure(self):
         df = self.service.groupby(self.df)

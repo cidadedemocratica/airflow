@@ -157,7 +157,7 @@ class CommentsComponent():
             return None
 
     def _generate_clusters_columns(self, col, df, index):
-        if(col in CommentsService._get_clusters_name(self)):
+        if(col in CommentsService.get_clusters_name(self)):
             cluster_votes_statistics = df.iloc[index][col].split(',')
             bar = html.Div(
                 style={},

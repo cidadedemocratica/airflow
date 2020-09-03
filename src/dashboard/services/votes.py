@@ -27,8 +27,8 @@ class VotesService():
         """
         try:
             self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
-        except:
-            pass
+        except Exception as err:
+            print(f"Error on votes service: {err}")
 
     def set_filters_options(self, component):
         component.utm_source_options = self.df['analytics_source'].value_counts(
