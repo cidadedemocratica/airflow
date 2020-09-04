@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
+import traceback
 
 
 class CommentsService():
@@ -29,12 +30,12 @@ class CommentsService():
             self._format_coluns()
             self._merge_clusters_and_comments()
         except Exception as err:
-            print(f"Error on comments service: {err}")
+            print(traceback.format_exc())
 
     def get_clusters_name(self):
         clusters_names = self.clusters.Grupos.value_counts().keys()
         clusters_names = clusters_names.map(
-            lambda cluster_name: f"cluster_{cluster_name}")
+            lambda cluster_name: f"{cluster_name}")
         return clusters_names
 
     def _format_coluns(self):
@@ -57,13 +58,9 @@ class CommentsService():
     def _merge_clusters_and_comments(self):
         self.clusters = self.clusters.rename(columns={
             "concorda": "cluster_concorda", "desagree": "cluster_discorda", "skip": "cluster_pulado", "comentário_id": "cluster_comentário_id"})
-        for index, value in enumerate(self.df['comentário']):
-            comment_clusters = self.clusters[self.clusters['comentário'] == value]
-            comment_clusters.loc[comment_clusters['comentário'] == value, 'cluster_concorda'] = comment_clusters['cluster_concorda'].map(
-                lambda x: x * 100)
-            comment_clusters.loc[comment_clusters['comentário'] == value, 'cluster_discorda'] = comment_clusters['cluster_discorda'].map(
-                lambda x: x * 100)
-            comment_clusters.loc[comment_clusters['comentário'] == value, 'cluster_pulado'] = comment_clusters['cluster_pulado'].map(
-                lambda x: x * 100)
-            for index2, cluster_name in enumerate(comment_clusters['cluster']):
-                self.df.loc[index, f'cluster_{cluster_name}'] = f"{comment_clusters.iloc[index2]['cluster_concorda']}, {comment_clusters.iloc[index2]['cluster_discorda']}, {comment_clusters.iloc[index2]['cluster_pulado']}"
+        for index, comment in enumerate(self.df['comentário']):
+            comment_clusters = self.clusters[self.clusters['comentário'] == comment]
+            comment_clusters = comment_clusters.apply(
+                lambda column: column * 100 if column.name in ['cluster_concorda', 'cluster_discorda', 'cluster_pulado'] else column)
+            for index2, cluster_name in enumerate(comment_clusters.Grupos):
+                self.df.loc[index, f'{cluster_name}'] = f"{comment_clusters.iloc[index2]['cluster_concorda']}, {comment_clusters.iloc[index2]['cluster_discorda']}, {comment_clusters.iloc[index2]['cluster_pulado']}"
