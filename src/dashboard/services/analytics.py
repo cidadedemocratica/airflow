@@ -28,11 +28,11 @@ class AnalyticsService():
 
     def prepare(self):
         """
-            reads the data stored by airflow on /tmp/votes_and_analytics.json.
+            reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
             Also initializes analytics api client.
         """
         try:
-            self.df = pd.read_json('/tmp/votes_and_analytics.json')
+            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
             self.analytics_client = analytics.initialize_analyticsreporting()
         except Exception as err:
             print(f"Error on analytics service: {err}")
