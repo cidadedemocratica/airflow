@@ -44,11 +44,13 @@ class AnalyticsApiOperator(BaseOperator):
 
     def merge_with_analytics(self):
         self.votes_dataframe = pd.DataFrame(self.votes_df)
-        gids = pd.DataFrame(self.votes_df).groupby(
+        df = pd.DataFrame(self.votes_df).groupby(
             'author__metadata__analytics_id').count().reset_index(level=0)
 
-        for counter, row in enumerate(gids.loc()):
-            gid = row["author__metadata__analytics_id"]
+        print(f"{len(df)} GIDS TO PROCESS")
+        counter = 0
+        gids = df.author__metadata__analytics_id.values
+        for gid in gids:
             if(not gid or gid == '1'):
                 continue
             self.helper.wait_analytics_quota(counter, "votes")
@@ -67,7 +69,6 @@ class AnalyticsApiOperator(BaseOperator):
                                 self.votes_dataframe, activity, voteTime, gid)
                             self.votes_dataframe.to_json(
                                 '/tmp/votes_analytics_mautic.json')
-                if(counter == len(gids) - 1):
-                    break
             except:
                 pass
+            counter += 1
