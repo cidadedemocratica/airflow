@@ -74,6 +74,14 @@ class VotesService():
             return pd.DataFrame(partial_df)
 
     def filter_by_email(self, df):
-        filterd_df = df[df['email'].map(
-            lambda email: 'mautic@mail.com' not in email)]
-        return filterd_df
+        mtc_emails = df.mtc_email.values
+        fallback_emails = df.email.values
+        include_rows = []
+        for idx, email in enumerate(mtc_emails):
+            if (email != None):
+                include_rows.append(True)
+            elif ('mautic@mail.com' not in fallback_emails[idx]):
+                include_rows.append(True)
+            else:
+                include_rows.append(False)
+        return df[include_rows]
