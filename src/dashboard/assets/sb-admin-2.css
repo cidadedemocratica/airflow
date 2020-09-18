@@ -217,20 +217,18 @@ caption {
 
 .comments-table th {
   text-align: inherit;
-  width: 150px;
+  width: 100%;
   border: 1px solid grey;
   text-align: center;
   position: sticky;
   top: 0;
-background-color: #e3e6f0;
+  background-color: #e3e6f0;
 }
 
 .comments-table td {
-  padding: 15px;
   vertical-align: middle;
   border: 1px solid grey;
   text-align: center;
-  min-width: 200px;
 }
 
 label {
@@ -11236,11 +11234,65 @@ body.sidebar-toggled footer.sticky-footer {
 
 /* Dash Style */
 
+.clusters {
+  display: flex;
+  overflow-x: scroll;
+  max-width: 400px;
+  height: 200px;
+  align-items: center;
+}
+
+.table-wrapper {
+max-width: 100vw;
+overflow-y: scroll;
+max-height: 600px;
+}
+
 .comment-bar {
-	border-style: solid;
-	border-color: white;
-	width: 100px;
-	height: 20px;
-	display: flex;
-	margin: auto;
+border-style: solid;
+border-color: white;
+width: 110px;
+height: 20px;
+display: flex;
+margin: auto;
+align-items: center;
+padding-top: 3px;
+padding-left: 25px;
+}
+
+.clusters-name {
+  padding-left: 20px;
+  padding-bottom: 3px;
+  padding-top: 10px;
+  align-items: center;
+}
+
+.participation {
+  color: #30bfd3;
+  font-size: 11px;
+  margin-right: 5px;
+}
+
+.no-participation {
+  color: #858796;
+  font-size: 11px;
+  margin-right: 5px;
+}
+
+.agree {
+  color: #16ab39;
+  font-size: 11px;
+  margin-right: 5px;
+}
+
+.disagree {
+  color: #de011e;
+  font-size: 11px;
+  margin-right: 5px;
+}
+
+.skipped {
+  color: #042a46;
+  font-size: 11px;
+  margin-right: 5px;
 }
