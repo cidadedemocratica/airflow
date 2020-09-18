@@ -74,8 +74,8 @@ class VotesService():
             return pd.DataFrame(partial_df)
 
     def filter_by_email(self, df):
-        mtc_emails = df.mtc_email.values
-        fallback_emails = df.email.values
+        mtc_emails = df.mtc_email
+        fallback_emails = df.email
         include_rows = []
         for idx, email in enumerate(mtc_emails):
             if (email != None):
