@@ -39,6 +39,7 @@ class CommentsComponent():
 
             @ self.app.callback(
                 Output("table_body", 'children'),
+                Output("table_clusters_body", 'children'),
                 [Input('_filter', 'value'), Input('participation', 'value')])
             def table_callback(_filter, participation):
                 df = self.df
@@ -80,15 +81,16 @@ class CommentsComponent():
     def _generate_table(self):
         ths = []
         for col in self.df.columns:
-            if((col != 'concorda') and (col != 'discorda') and (col != 'pulados') and (col != 'participação')):
+            if(col in ["comentário_id", "comentário", "autor", "convergência"]):
                 ths.append(html.Th(col))
+        ths.append(html.Th("clusters"))
         return html.Table(className="comments-table", children=[
             html.Thead(
                 html.Tr(ths)
             ),
             html.Tbody(
-                self._generate_table_body(), id="table_body"
-            )
+                self._generate_table_body(), id="table_body",
+            ),
         ])
 
     def _generate_table_body(self, df=pd.DataFrame({})):
@@ -97,30 +99,33 @@ class CommentsComponent():
         trs = []
         for index in range(len(df)):
             tds = []
+            tds_clusters = []
             for col in df.columns:
                 if(col == "convergência"):
                     tds.append(
                         html.Td(str(df.iloc[index][col]) + '%'))
-                cluster_columns = self._generate_clusters_columns(
-                    col, df, index)
-                if(cluster_columns):
-                    tds.append(html.Td(cluster_columns))
                 comments_columns = self._generate_comments_columns(
                     col, df, index)
+                cluster_bars = self._generate_clusters_bars(
+                    col, df, index)
                 if(comments_columns):
-                    tds.append(html.Td(comments_columns))
-
+                    tds_clusters.append(comments_columns)
+                if(cluster_bars):
+                    tds_clusters.append(cluster_bars)
                 elif(col in ["autor", "comentário", "comentário_id"]):
                     tds.append(
                         html.Td(children=[df.iloc[index][col]]))
+            tds.append(html.Td(className='clusters', children=tds_clusters))
             trs.append(html.Tr(tds))
         return trs
 
     def _generate_comments_columns(self, col, df, index):
         if(col == "geral"):
             dom_element = html.Div(
-                style={},
                 children=[
+                    html.Div(className='clusters-name', children=[
+                        html.Span(col)
+                    ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
                             'backgroundColor': '#16ab39', 'width': df.iloc[index]['concorda'], 'height': 20}),
@@ -130,12 +135,15 @@ class CommentsComponent():
                             'backgroundColor': '#042a46', 'width': df.iloc[index]['pulados'], 'height': 20})
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="agree", children=str(
                             round(df.iloc[index]['concorda'])) + '%'),
-                        html.Span(style={'color': '#de011e', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="disagree", children=str(
                             round(df.iloc[index]['discorda'])) + '%'),
-                        html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="skipped", children=str(
                             round(df.iloc[index]['pulados'])) + '%'),
+                    ]),
+                    html.Div(className='clusters-name', children=[
+                        html.Span("participação")
                     ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
@@ -145,9 +153,9 @@ class CommentsComponent():
                             'backgroundColor': '#858796', 'width': df.iloc[index]['pulados'], 'height': 20, 'opacity': '56%'}),
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#30bfd3', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="participation", children=str(
                             round(df.iloc[index]['concorda'] + df.iloc[index]['discorda'])) + '%'),
-                        html.Span(style={'color': '#858796', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="no-participation", children=str(
                             round(df.iloc[index]['pulados'])) + '%'),
                     ]),
                 ],
@@ -156,12 +164,15 @@ class CommentsComponent():
         else:
             return None
 
-    def _generate_clusters_columns(self, col, df, index):
+    def _generate_clusters_bars(self, col, df, index):
         if(col in CommentsService.get_clusters_name(self)):
             cluster_votes_statistics = df.iloc[index][col].split(',')
             bar = html.Div(
                 style={},
                 children=[
+                    html.Div(className='clusters-name', children=[
+                        html.Span(col)
+                    ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
                             'backgroundColor': '#16ab39', 'width': round(float(cluster_votes_statistics[0])), 'height': 20}),
@@ -171,12 +182,15 @@ class CommentsComponent():
                             'backgroundColor': '#042a46', 'width': round(float(cluster_votes_statistics[2])), 'height': 20})
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#16ab39', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="agree", children=str(
                             round(float(cluster_votes_statistics[0]))) + '%'),
-                        html.Span(style={'color': '#de011e', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="disagree", children=str(
                             round(float(cluster_votes_statistics[1]))) + '%'),
-                        html.Span(style={'color': '#042a46', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="skipped", children=str(
                             round(float(cluster_votes_statistics[2]))) + '%'),
+                    ]),
+                    html.Div(className='clusters-name', children=[
+                        html.Span("participação")
                     ]),
                     html.Div(className='comment-bar', children=[
                         html.Div(style={
@@ -187,9 +201,9 @@ class CommentsComponent():
                             'opacity': '56%'}),
                     ]),
                     html.Div(style={}, children=[
-                        html.Span(style={'color': '#30bfd3', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="participation", children=str(
                             round(float(cluster_votes_statistics[0]) + float(cluster_votes_statistics[1]))) + '%'),
-                        html.Span(style={'color': '#858796', 'fontSize': '11px', 'marginRight': '5px'}, children=str(
+                        html.Span(className="no-participation", children=str(
                             round(float(cluster_votes_statistics[2]))) + '%'),
                     ]),
 
@@ -225,6 +239,6 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
-                html.Div(style={'maxWidth': '100vw', 'overflow': 'scroll', 'maxHeight': '600px'},  children=[
-                         self._generate_table()])
+                html.Div(className='table-wrapper',
+                         children=[self._generate_table()])
             ])
