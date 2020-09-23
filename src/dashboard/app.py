@@ -16,11 +16,11 @@ class App():
 
     def __init__(self):
         self.app = dash.Dash(__name__)
+
+    def render(self):
         self.votes_component = VotesComponent(self.app)
         self.comments_component = CommentsComponent(self.app)
         self.analytics_component = AnalyticsComponent(self.app)
-
-    def render(self):
         self.app.layout = html.Div(children=[
             html.Nav(
                 className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow", children=[

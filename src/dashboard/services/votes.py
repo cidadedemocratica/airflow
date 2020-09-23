@@ -19,9 +19,9 @@ class VotesService():
 
     def __init__(self):
         self.df = pd.DataFrame({})
-        self.prepare()
+        self.load_data()
 
-    def prepare(self):
+    def load_data(self):
         """
             reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
         """

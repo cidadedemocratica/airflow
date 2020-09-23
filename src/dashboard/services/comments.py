@@ -14,53 +14,42 @@ class CommentsService():
     """
 
     def __init__(self):
-        self.df = pd.DataFrame({})
+        self.comments = pd.DataFrame({})
         self.clusters = pd.DataFrame({})
-        self.prepare()
+        self.load_data()
 
-    def prepare(self):
+    def load_data(self):
         """
             reads the data stored by airflow on /tmp/comments.json.
             reads the data stored by airflow on /tmp/clusters.json.
             show clusters statistics by comments
         """
         try:
-            self.df = pd.read_json('/tmp/comments.json')
+            self.comments = pd.read_json('/tmp/comments.json')
             self.clusters = pd.read_json('/tmp/clusters.json')
-            self._format_coluns()
-            self._merge_clusters_and_comments()
+            self._create_geral_column()
+            self._create_clusters_columns()
         except Exception as err:
             print(traceback.format_exc())
 
     def get_clusters_name(self):
-        clusters_names = self.clusters.Grupos.value_counts().keys()
+        clusters_names = self.clusters.cluster_name.value_counts().keys()
         clusters_names = clusters_names.map(
             lambda cluster_name: f"{cluster_name}")
         return clusters_names
 
-    def _format_coluns(self):
-        self.df = pd.DataFrame(data=self.df, columns=[
-            'comentário_id', 'comentário', 'autor', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
-        self.df['concorda'] = self.df['concorda'].map(
-            lambda x: x * 100)
-        self.df['discorda'] = self.df['discorda'].map(
-            lambda x: x * 100)
-        self.df['pulados'] = self.df['pulados'].map(lambda x: x * 100)
-        self.df['participação'] = self.df['participação'].map(
-            lambda x: x * 100)
-        self.df['convergência'] = self.df['convergência'].map(
-            lambda x: round(x * 100))
-        self.df['geral'] = ''
-        for index, value in enumerate(self.df['geral']):
-            self.df.loc[index,
-                        'geral'] = f"{self.df.loc[index, 'concorda']}, {self.df.loc[index, 'discorda']}, {self.df.loc[index, 'pulados']}"
+    def _create_geral_column(self):
+        self.comments = pd.DataFrame(data=self.comments, columns=[
+            'comentário', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
+        self.comments['geral'] = ''
+        for index, value in enumerate(self.comments['geral']):
+            self.comments.loc[index,
+                              'geral'] = f"{self.comments.loc[index, 'concorda']}, {self.comments.loc[index, 'discorda']}, {self.comments.loc[index, 'pulados']}"
 
-    def _merge_clusters_and_comments(self):
-        self.clusters = self.clusters.rename(columns={
-            "concorda": "cluster_concorda", "desagree": "cluster_discorda", "skip": "cluster_pulado", "comentário_id": "cluster_comentário_id"})
-        for index, comment in enumerate(self.df['comentário']):
-            comment_clusters = self.clusters[self.clusters['comentário'] == comment]
-            comment_clusters = comment_clusters.apply(
-                lambda column: column * 100 if column.name in ['cluster_concorda', 'cluster_discorda', 'cluster_pulado'] else column)
-            for index2, cluster_name in enumerate(comment_clusters.Grupos):
-                self.df.loc[index, f'{cluster_name}'] = f"{comment_clusters.iloc[index2]['cluster_concorda']}, {comment_clusters.iloc[index2]['cluster_discorda']}, {comment_clusters.iloc[index2]['cluster_pulado']}"
+    def _create_clusters_columns(self):
+        for index, comment in enumerate(self.comments['comentário']):
+            comment_clusters = self.clusters[self.clusters['conteúdo'] == comment]
+            for index2, cluster_name in enumerate(comment_clusters.cluster_name):
+                self.comments.loc[index, f'{cluster_name}'] = f"{comment_clusters.iloc[index2]['concorda']}, {comment_clusters.iloc[index2]['discorda']}, {comment_clusters.iloc[index2]['pulados']}"
+                self.comments.loc[index,
+                                  f'{cluster_name}_participation'] = f"{comment_clusters.iloc[index2]['participação']}"

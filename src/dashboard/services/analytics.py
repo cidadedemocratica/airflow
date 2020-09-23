@@ -24,9 +24,9 @@ class AnalyticsService():
         self.view_id = "215248741"
         self.analytics_days_range = 30
         self.page_path = "ga:pagePath=@/testeopiniao/,ga:pagePath=@/opiniao/"
-        self.prepare()
+        self.load_data()
 
-    def prepare(self):
+    def load_data(self):
         """
             reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
             Also initializes analytics api client.
