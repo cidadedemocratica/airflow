@@ -20,26 +20,19 @@ class CommentsComponent():
         self.clusters = self.service.clusters
         self.order_options = ['concorda',
                               'discorda', 'pulados', 'convergência']
-        self.prepare()
+        self.add_callbacks()
 
-    def prepare(self):
-        try:
-            self.callbacks()
-        except:
-            pass
-
-    def callbacks(self):
+    def add_callbacks(self):
         if(not self.comments.empty):
-            @ self.app.callback(
+            @self.app.callback(
                 Output("comments_download_export", 'href'),
                 [Input("comments_exports_df", 'n_clicks')]
             )
             def export_callback(export_df):
                 return self.export_component.export(self.comments)
 
-            @ self.app.callback(
+            @self.app.callback(
                 Output("table_body", 'children'),
-                Output("table_clusters_body", 'children'),
                 [Input('_filter', 'value'), Input('participation', 'value')])
             def table_callback(_filter, participation):
                 df = self.comments
@@ -59,7 +52,10 @@ class CommentsComponent():
                             'Votos e participação em todos os comentários.']),
                         html.Div(className="card-body", children=[
                             html.Div(children=[
-                                self._get_table(),
+                                dcc.Loading(id="comments_loader", type="default", color="#30bfd3", children=[
+                                    html.Div(id="commments_filters",
+                                             children=[self._get_table()])
+                                ]),
                                 html.Hr(),
                                 self.export_component.render(),
                             ])
