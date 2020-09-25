@@ -14,8 +14,6 @@ class CommentsService():
     """
 
     def __init__(self):
-        self.comments = pd.DataFrame({})
-        self.clusters = pd.DataFrame({})
         self.load_data()
 
     def load_data(self):
@@ -24,6 +22,8 @@ class CommentsService():
             reads the data stored by airflow on /tmp/clusters.json.
             show clusters statistics by comments
         """
+        self.comments = pd.DataFrame({})
+        self.clusters = pd.DataFrame({})
         try:
             self.comments = pd.read_json('/tmp/comments.json')
             self.clusters = pd.read_json('/tmp/clusters.json')
@@ -31,8 +31,9 @@ class CommentsService():
             self._create_clusters_columns()
         except Exception as err:
             print(traceback.format_exc())
+            pass
 
-    def get_clusters_name(self):
+    def get_clusters_names(self):
         clusters_names = self.clusters.cluster_name.value_counts().keys()
         clusters_names = clusters_names.map(
             lambda cluster_name: f"{cluster_name}")

@@ -173,8 +173,12 @@ class VotesComponent():
                     Input('email', 'value'),
                     Input('votes_by_date', 'start_date'),
                     Input('votes_by_date', 'end_date'),
+                    Input('app_reload', 'n_clicks'),
                  ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date):
+            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date, app_reload):
+                if(app_reload != 0):
+                    self.service.load_data()
+                    self.df = self.service.df
                 self.df = self.service.df
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(

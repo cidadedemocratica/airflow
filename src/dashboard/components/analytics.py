@@ -26,19 +26,11 @@ class AnalyticsComponent():
         self.url_destination = self.service.page_path
         self.export_component = ExportsComponent("analytics")
         self.df = self.service.df
-        self.ej_users_count = 1
-        self.analytics_users_count = 1
-        self.utm_source_options = []
-        self.utm_medium_options = []
-        self.utm_campaign_options = []
         self.prepare()
 
     def prepare(self):
-        try:
-            self.set_default_filter()
-            self.register_callbacks()
-        except Exception as err:
-            print(f"Error: {err}")
+        self.set_default_filter()
+        self.add_callbacks()
 
     def render(self):
         """
@@ -87,7 +79,7 @@ class AnalyticsComponent():
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children=f"url_destination: {(self.url_destination).replace('ga:pagePath=@', ' ')}"),
-                    ])
+                ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
@@ -137,14 +129,6 @@ class AnalyticsComponent():
                 ]),
             ])
         ],
-        )
-
-    def get_loading(self, is_loading=False):
-        return dcc.Loading(
-            id="loading-1",
-            type="default",
-            children=html.Div(id="loading-output-1"),
-            loading_state={'is_loading': is_loading}
         )
 
     def get_figure(self, df=pd.DataFrame({})):
@@ -210,7 +194,7 @@ class AnalyticsComponent():
             dcc.Graph(figure=fig)
         ])
 
-    def register_callbacks(self):
+    def add_callbacks(self):
         @self.app.callback(
             Output("analytics_download_export", 'href'),
             [Input('analytics_exports_df', 'n_clicks')]
@@ -225,14 +209,21 @@ class AnalyticsComponent():
                 Input('campaign_medium', 'value'),
                 Input('by_date', 'start_date'),
                 Input('by_date', 'end_date'),
+                Input('app_reload', 'n_clicks'),
              ])
         def filter_callbacks(campaign_source,
                              campaign_name,
                              campaign_medium,
                              start_date,
-                             end_date):
+                             end_date,
+                             app_reload):
+            if(app_reload != 0):
+                self.service.load_data()
+                self.df = self.service.df
+
             if(self.df.empty):
                 return
+
             self.set_default_filter()
             if(campaign_source and len(campaign_source) >= 3):
                 self.set_campaign_source_filter(
@@ -250,6 +241,11 @@ class AnalyticsComponent():
 
     def set_default_filter(self):
         self.df = self.service.df
+        self.ej_users_count = 1
+        self.analytics_users_count = 1
+        self.utm_source_options = []
+        self.utm_medium_options = []
+        self.utm_campaign_options = []
         self.ej_users_count = len(self.df['email'].value_counts())
         self.analytics_users_count = self.service.filter_by_analytics({})
 

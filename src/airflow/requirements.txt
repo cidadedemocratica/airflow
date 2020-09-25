@@ -8,5 +8,5 @@ password
 Flask-Bcrypt
 ipython
 requests
-dash==1.13.3
+dash==1.16.2
 matplotlib

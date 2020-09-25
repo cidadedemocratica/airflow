@@ -11295,3 +11295,18 @@ padding-left: 25px;
   font-size: 11px;
   margin-right: 5px;
 }
+
+.reload-btn {
+   background-color: var(--white);
+   color: var(--cyan) 
+}
+
+.reload-btn[data-dash-is-loading="true"]{
+    visibility: hidden;
+}
+.reload-btn[data-dash-is-loading="true"]::before{
+    content: "Loading...";
+    display: inline-block;
+    color: magenta;
+    visibility: visible;
+}

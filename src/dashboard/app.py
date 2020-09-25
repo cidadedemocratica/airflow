@@ -23,17 +23,25 @@ class App():
         self.analytics_component = AnalyticsComponent(self.app)
         self.app.layout = html.Div(children=[
             html.Nav(
-                className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow", children=[
+                className="navbar navbar-light bg-white topbar mb-4 static-top shadow", children=[
                     html.Img(src="./assets/logo-ej-mini.png"),
-                    html.Div(style={"marginLeft": "5px"},
-                             children=[html.Span("Bem vinda!")])
+                    html.Button(className='reload-btn', children=[html.I(className='fa fa-repeat')],
+                                id='app_reload', n_clicks=0),
                 ]),
-            html.Div(style={"width": "90%", "margin": "auto"}, children=[
-                html.Div(style={}, children=[
-                    self.analytics_component.render(),
-                ]),
-                html.Div(style={}, children=[
-                    self.votes_component.render(),
-                ]),
-                self.comments_component.render()
-            ])])
+            html.Div(id="app",
+                     style={"width": "90%", "margin": "auto"},
+                     children=[
+                         html.Div(id="app_loader",
+                                  children=self._app_root(self.analytics_component,
+                                                          self.votes_component, self.comments_component))
+
+                     ])
+        ])
+
+    def _app_root(self, analytics_component, votes_component, comments_component):
+        return [html.Div(style={}, children=[
+            analytics_component.render(),
+        ]),
+            html.Div(style={}, children=[
+                votes_component.render(),
+            ]), comments_component.render()]

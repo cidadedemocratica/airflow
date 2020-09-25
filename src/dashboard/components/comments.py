@@ -17,31 +17,36 @@ class CommentsComponent():
         self.service = CommentsService()
         self.export_component = ExportsComponent("comments")
         self.comments = self.service.comments
-        self.clusters = self.service.clusters
         self.order_options = ['concorda',
                               'discorda', 'pulados', 'convergência']
         self.add_callbacks()
 
     def add_callbacks(self):
-        if(not self.comments.empty):
-            @self.app.callback(
-                Output("comments_download_export", 'href'),
-                [Input("comments_exports_df", 'n_clicks')]
-            )
-            def export_callback(export_df):
-                return self.export_component.export(self.comments)
+        @self.app.callback(
+            Output("comments_download_export", 'href'),
+            [Input("comments_exports_df", 'n_clicks')]
+        )
+        def export_callback(export_df):
+            return self.export_component.export(self.comments)
 
-            @self.app.callback(
-                Output("table_body", 'children'),
-                [Input('_filter', 'value'), Input('participation', 'value')])
-            def table_callback(_filter, participation):
-                df = self.comments
-                if(participation):
-                    df = df[df['participação'] >= int(participation) / 100]
-                if(_filter in self.order_options):
-                    df = df.sort_values(by=_filter, ascending=False)
-                    return self._generate_table_body(df)
+        @self.app.callback(
+            Output("table_body", 'children'),
+            [Input('_filter', 'value'),
+             Input('app_reload', 'n_clicks'),
+             Input('participation', 'value')])
+        def table_callback(_filter, app_reload, participation):
+            if(app_reload != 0):
+                self.service.load_data()
+                self.comments = self.service.comments
+            if(self.comments.empty):
+                return self._generate_table_body()
+            df = self.comments
+            if(participation):
+                df = df[df['participação'] >= int(participation) / 100]
+            if(_filter in self.order_options):
+                df = df.sort_values(by=_filter, ascending=False)
                 return self._generate_table_body(df)
+            return self._generate_table_body(df)
 
     def render(self):
         if(not self.comments.empty):
@@ -68,8 +73,17 @@ class CommentsComponent():
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Votos e participação em todos os comentários.']),
-                    html.Div(className="card-body",
-                             children=["Não há dados para apresentar"])
+                    html.Div(className="card-body", children=[
+                        html.Div(children=[
+                            html.Span("Não há dados para apresentar"),
+                            dcc.Loading(id="comments_loader", type="default", color="#30bfd3", children=[
+                                html.Div(id="commments_filters",
+                                         children=[self._get_table()])
+                            ]),
+                            html.Hr(),
+                            self.export_component.render(),
+                        ])
+                    ])
                 ])
             ])
         ])
@@ -90,6 +104,8 @@ class CommentsComponent():
         ])
 
     def _generate_table_body(self, df=pd.DataFrame({})):
+        if(self.comments.empty):
+            return
         if(df.empty):
             df = self.comments
         trs = []
@@ -167,7 +183,7 @@ class CommentsComponent():
         ])
 
     def _get_clusters_bars(self, col, df, index):
-        if(col in CommentsService.get_clusters_name(self)):
+        if(col in self.service.get_clusters_names()):
             cluster_votes_statistics = df.iloc[index][col].split(',')
             cluster_votes_participation = df.iloc[index][f"{col}_participation"]
             bar = html.Div(
