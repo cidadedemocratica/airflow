@@ -78,11 +78,6 @@ class AnalyticsComponent():
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children=f"url_destination: {(self.url_destination).replace('ga:pagePath=@', ' ')}"),
-                ])
-                ]),
-                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
                               children="utm_source:"),
                     dcc.Dropdown(
                         id='campaign_source',
@@ -125,6 +120,11 @@ class AnalyticsComponent():
                         clearable=True,
                         style={"flexGrow": 1},
                     ),
+                ])
+                ]),
+                html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                              children=f"Paginas analisadas: {(self.url_destination).replace('ga:pagePath=@', ' ')}"),
                 ])
                 ]),
             ])
