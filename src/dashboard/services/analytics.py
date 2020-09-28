@@ -43,35 +43,6 @@ class AnalyticsService():
         analytics_users = self.get_analytics_new_users(_filter)
         return int(analytics_users)
 
-    def get_default_filter(self):
-        # start from datetime.now - self.analytics_days_range days
-        startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
-        # include today on report
-        endDate = datetime.datetime.now(
-            datetime.timezone.utc).strftime("%Y-%m-%d")
-        return {
-            "reportRequests": [
-                {
-                    "viewId": self.view_id,
-                    "dateRanges": {
-                        "startDate": startDate,
-                        "endDate": endDate
-                    },
-                    "metrics": [{
-                        "expression": "ga:users",
-                        "alias": "users",
-                        "formattingType": "INTEGER"
-                    }],
-                    "dimensions": [{
-                        "name": "ga:pagePath"
-                    }],
-                    "filtersExpression": self.page_path
-                }
-            ],
-            "useResourceQuotas": False
-        }
-
     def get_date_filter(self, start_date, end_date):
         start_date = start_date.strftime("%Y-%m-%d")
         end_date = end_date.strftime("%Y-%m-%d")
@@ -97,13 +68,9 @@ class AnalyticsService():
             "useResourceQuotas": False
         }
 
-    def get_campaign_filter(self, campaign):
-        # start from datetime.now - 60 days
-        startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
-        # include today on report
-        endDate = datetime.datetime.now(
-            datetime.timezone.utc).strftime("%Y-%m-%d")
+    def get_campaign_filter(self, campaign, start_date, end_date):
+        startDate = start_date.strftime("%Y-%m-%d")
+        endDate = end_date.strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
@@ -129,13 +96,9 @@ class AnalyticsService():
             "useResourceQuotas": False
         }
 
-    def get_name_filter(self, campaign_name):
-        # start from datetime.now - 60 days
-        startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
-        # include today on report
-        endDate = datetime.datetime.now(
-            datetime.timezone.utc).strftime("%Y-%m-%d")
+    def get_name_filter(self, campaign_name, start_date, end_date):
+        startDate = start_date.strftime("%Y-%m-%d")
+        endDate = end_date.strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
@@ -161,13 +124,9 @@ class AnalyticsService():
             "useResourceQuotas": False
         }
 
-    def get_medium_filter(self, campaign_medium):
-        # start from datetime.now - 60 days
-        startDate = (datetime.datetime.now(datetime.timezone.utc) -
-                     datetime.timedelta(self.analytics_days_range)).strftime("%Y-%m-%d")
-        # include today on report
-        endDate = datetime.datetime.now(
-            datetime.timezone.utc).strftime("%Y-%m-%d")
+    def get_medium_filter(self, campaign_medium, start_date, end_date):
+        startDate = start_date.strftime("%Y-%m-%d")
+        endDate = end_date.strftime("%Y-%m-%d")
         return {
             "reportRequests": [
                 {
@@ -206,7 +165,7 @@ class AnalyticsService():
     def dataframe_between_dates(self, df, first_day, last_day):
         if(first_day and last_day):
             partial_df = df[df['criado'].map(lambda x: parse(
-                x).date() >= first_day and parse(x).date() <= last_day)]['email'].value_counts()
+                x).date() >= first_day and parse(x).date() <= last_day)]
             return pd.DataFrame(partial_df)
         elif (first_day and not last_day):
             partial_df = df[df['criado'].map(

@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from components.comments import CommentsComponent
 from components.votes import VotesComponent
-from components.analytics import AnalyticsComponent
+from components.analytics.analytics import AnalyticsComponent
 from dash.dependencies import Input, Output
 
 from dateutil.parser import *
