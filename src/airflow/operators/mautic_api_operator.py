@@ -40,13 +40,13 @@ class MauticApiOperator(BaseOperator):
         print(
             f'Airflow will request {len(uniq_emails)} contacts on mautic api')
         for counter, row in enumerate(uniq_emails.loc()):
-            #mtc_id = self.helper.get_mtc_id_from_email(row["email"])
             try:
                 mtc_id = str(int(row["author__metadata__mautic_id"]))
                 if(mtc_id):
                     mtc_contact = self._get_contact(mtc_id)
                     votes = self.helper.merge(
                         votes, mtc_contact, row["email"])
+                    votes.to_json('/tmp/votes_and_mautic.json')
                 print(f'{counter} requests made. Contact {row["email"]}')
                 if(counter == len(uniq_emails) - 1):
                     break
@@ -60,10 +60,6 @@ class MauticApiOperator(BaseOperator):
             "Authorization": f'Basic cmljYXJkb0BjaWRhZGVkZW1vY3JhdGljYS5vcmcuYnI6cVlVNjQzNHJPRjNQ'}
         response = requests.get(url, headers=headers)
         return response.json()['contact']
-
-    def _df_to_json(self, df):
-        self.df = pd.DataFrame(df)
-        self.df.to_json('/tmp/votes_and_mautic.json')
 
     def _get_url(self, mtc_id):
         return f"{self.connection.schema}://{self.connection.host}/api/contacts/{mtc_id}"

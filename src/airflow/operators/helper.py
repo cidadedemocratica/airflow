@@ -44,12 +44,12 @@ class OperatorHelper():
             time.sleep(self.TIME_TO_WAIT_ANALYTICS_QUOTA)
 
     def update_df_with_activity(self, df, activity, voteTime, gid):
-        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
                'analytics_source'] = activity['source']
-        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
                'analytics_medium'] = activity['medium']
-        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
                'analytics_pageview'] = activity['pageview']['pagePath']
-        df.loc[(df['criado'] == voteTime) & (df['gid'] == gid),
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
                'analytics_campaign'] = activity['campaign']
         return df

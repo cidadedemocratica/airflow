@@ -40,7 +40,7 @@ class AnalyticsApiOperator(BaseOperator):
         return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
     def get_client_votes(self, _id):
-        return self.votes_dataframe[self.votes_dataframe['gid'] == _id]["criado"]
+        return self.votes_dataframe[self.votes_dataframe.author__metadata__analytics_id == _id]["criado"]
 
     def merge_with_analytics(self):
         self.votes_dataframe = pd.DataFrame(self.votes_df)
