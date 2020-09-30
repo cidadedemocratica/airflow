@@ -53,7 +53,6 @@ class AnalyticsApiOperator(BaseOperator):
         for gid in gids:
             if(not gid or gid == '1'):
                 continue
-            self.helper.wait_analytics_quota(counter, "votes")
             try:
                 report = analytics.get_user_activity(
                     self.analytics_client, gid)
@@ -68,7 +67,7 @@ class AnalyticsApiOperator(BaseOperator):
                             self.votes_dataframe = self.helper.update_df_with_activity(
                                 self.votes_dataframe, activity, voteTime, gid)
                             self.votes_dataframe.to_json(
-                                '/tmp/votes_analytics_mautic.json')
+                                '/tmp/votes_analytics.json')
             except:
                 pass
             counter += 1

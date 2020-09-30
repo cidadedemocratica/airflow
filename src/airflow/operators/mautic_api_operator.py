@@ -28,7 +28,7 @@ class MauticApiOperator(BaseOperator):
         self._df_to_json(df)
 
     def _get_votes(self):
-        self.votes_df = pd.read_json('/tmp/votes.json')
+        self.votes_df = pd.read_json('/tmp/votes_analytics.json')
 
     def merge_votes_and_contacts(self):
         votes = pd.DataFrame(self.votes_df)
@@ -46,7 +46,7 @@ class MauticApiOperator(BaseOperator):
                     mtc_contact = self._get_contact(mtc_id)
                     votes = self.helper.merge(
                         votes, mtc_contact, row["email"])
-                    votes.to_json('/tmp/votes_and_mautic.json')
+                    votes.to_json('/tmp/votes_analytics_mautic.json')
                 print(f'{counter} requests made. Contact {row["email"]}')
                 if(counter == len(uniq_emails) - 1):
                     break

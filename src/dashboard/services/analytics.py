@@ -32,10 +32,11 @@ class AnalyticsService():
             Also initializes analytics api client.
         """
         try:
-            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+            self.df = pd.read_json('/tmp/votes_analytics.json')
             self.analytics_client = analytics.initialize_analyticsreporting()
         except Exception as err:
             print(f"Error on analytics service: {err}")
+            pass
 
     def filter_by_analytics(self, _filter):
         if (_filter == {}):
@@ -178,7 +179,7 @@ class AnalyticsService():
 
     def set_filters_options(self, component, df=pd.DataFrame({})):
         if(df.empty):
-            df = self.df
+            return
         df = df.groupby(['email',
                          'analytics_campaign',
                          'analytics_source',

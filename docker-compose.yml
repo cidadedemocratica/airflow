@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 
 services:
   jupyter:
@@ -22,7 +22,16 @@ services:
     ports:
       - "8080:8080"
       - "8050:8050"
-    entrypoint: "sh /home/airflow/dags/src/airflow/airflow-run.sh" 
+    entrypoint: "sh /home/airflow/dags/src/airflow/airflow-run.sh"
+  db:
+    image: postgres:12.2
+    environment:
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_USER=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - backups:/var/lib/postgresql/data
 volumes:
   analysisdata:
   airflowdata:
+  backups:

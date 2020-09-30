@@ -10,3 +10,4 @@ ipython
 requests
 dash==1.16.2
 matplotlib
+psycopg2
