@@ -74,18 +74,15 @@ class AnalyticsApiOperator(BaseOperator):
 
         print(f"{len(gids)} GIDS TO PROCESS")
         for idx, gid in enumerate(gids):
-            try:
-                activities = self.get_gid_activities(gid)
-                voteTimeStamps = self.get_gid_votes(gid)
-                for activity in activities:
-                    for voteTime in voteTimeStamps:
-                        belongs = self.vote_belongs_to_activity(
-                            voteTime, activity['activityTime'])
-                        if(belongs):
-                            df = self.update_df_with_activity(
-                                activity, voteTime, gid)
-                            df.to_json('/tmp/votes_analytics.json')
-            except:
-                pass
-            if(idx % 200 == 0):
+            activities = self.get_gid_activities(gid)
+            voteTimeStamps = self.get_gid_votes(gid)
+            for activity in activities:
+                for voteTime in voteTimeStamps:
+                    belongs = self.vote_belongs_to_activity(
+                        voteTime, activity['activityTime'])
+                    if(belongs):
+                        self.votes_dataframe = self.update_df_with_activity(
+                            activity, voteTime, gid)
+            self.votes_dataframe.to_json('/tmp/votes_analytics.json')
+            if(idx % 100 == 0):
                 print(f'{idx} GIDS processed')
