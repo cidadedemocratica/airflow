@@ -31,25 +31,7 @@ class OperatorHelper():
     def get_contact_ga(self, contacts, mtc_id):
         return contacts[mtc_id]["fields"]["core"]["gid"]["value"]
 
-    def get_sessions_activities(self, sessions):
-        sessions_activities = list(map(
-            lambda session: session['activities'], sessions))
-        activities = []
-        list(map(lambda x: activities.append(x.pop()), sessions_activities))
-        return activities
-
     def wait_analytics_quota(self, analytics_requests, data_type):
         if(analytics_requests % self.MAX_REQUESTS_PER_TURN == 0 and analytics_requests > 0):
             print(f"{analytics_requests} gids processed")
             time.sleep(self.TIME_TO_WAIT_ANALYTICS_QUOTA)
-
-    def update_df_with_activity(self, df, activity, voteTime, gid):
-        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
-               'analytics_source'] = activity['source']
-        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
-               'analytics_medium'] = activity['medium']
-        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
-               'analytics_pageview'] = activity['pageview']['pagePath']
-        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
-               'analytics_campaign'] = activity['campaign']
-        return df

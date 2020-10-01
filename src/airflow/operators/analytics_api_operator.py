@@ -39,35 +39,53 @@ class AnalyticsApiOperator(BaseOperator):
         deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
         return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
-    def get_client_votes(self, _id):
+    def get_gid_votes(self, _id):
         return self.votes_dataframe[self.votes_dataframe.author__metadata__analytics_id == _id]["criado"]
+
+    def get_gid_activities(self, gid):
+        if(not gid or gid == '1'):
+            return []
+        report = analytics.get_user_activity(
+            self.analytics_client, gid)
+        return self.get_sessions_activities(report['sessions'])
+
+    def get_sessions_activities(self, sessions):
+        sessions_activities = list(map(
+            lambda session: session['activities'], sessions))
+        activities = []
+        list(map(lambda x: activities.append(x.pop()), sessions_activities))
+        return activities
+
+    def update_df_with_activity(self, activity, voteTime, gid):
+        df = self.votes_dataframe
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
+               'analytics_source'] = activity['source']
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
+               'analytics_medium'] = activity['medium']
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
+               'analytics_pageview'] = activity['pageview']['pagePath']
+        df.loc[(df['criado'] == voteTime) & (df.author__metadata__analytics_id == gid),
+               'analytics_campaign'] = activity['campaign']
+        return df
 
     def merge_with_analytics(self):
         self.votes_dataframe = pd.DataFrame(self.votes_df)
-        df = pd.DataFrame(self.votes_df).groupby(
-            'author__metadata__analytics_id').count().reset_index(level=0)
+        gids = self.votes_dataframe.author__metadata__analytics_id.value_counts().keys()
 
-        print(f"{len(df)} GIDS TO PROCESS")
-        counter = 0
-        gids = df.author__metadata__analytics_id.values
-        for gid in gids:
-            if(not gid or gid == '1'):
-                continue
+        print(f"{len(gids)} GIDS TO PROCESS")
+        for idx, gid in enumerate(gids):
             try:
-                report = analytics.get_user_activity(
-                    self.analytics_client, gid)
-                activities = self.helper.get_sessions_activities(
-                    report['sessions'])
+                activities = self.get_gid_activities(gid)
+                voteTimeStamps = self.get_gid_votes(gid)
                 for activity in activities:
-                    voteTimeStamps = self.get_client_votes(gid)
                     for voteTime in voteTimeStamps:
                         belongs = self.vote_belongs_to_activity(
                             voteTime, activity['activityTime'])
                         if(belongs):
-                            self.votes_dataframe = self.helper.update_df_with_activity(
-                                self.votes_dataframe, activity, voteTime, gid)
-                            self.votes_dataframe.to_json(
-                                '/tmp/votes_analytics.json')
+                            df = self.update_df_with_activity(
+                                activity, voteTime, gid)
+                            df.to_json('/tmp/votes_analytics.json')
             except:
                 pass
-            counter += 1
+            if(idx % 200 == 0):
+                print(f'{idx} GIDS processed')

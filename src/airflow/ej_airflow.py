@@ -59,5 +59,5 @@ t5 = AnalyticsApiOperator(
     log_response=True,
     dag=dag)
 
-t1 >> t5 >> t4
+t1 >> [t5, t4]
 t2, t3
