@@ -50,7 +50,8 @@ class MauticApiOperator(BaseOperator):
                 print(f'{counter} requests made. Contact {row["email"]}')
                 if(counter == len(uniq_emails) - 1):
                     break
-            except:
+            except Exception as err:
+                print(f'{err}')
                 pass
         return votes
 
