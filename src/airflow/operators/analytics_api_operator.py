@@ -71,18 +71,21 @@ class AnalyticsApiOperator(BaseOperator):
     def merge_with_analytics(self):
         self.votes_dataframe = pd.DataFrame(self.votes_df)
         gids = self.votes_dataframe.author__metadata__analytics_id.value_counts().keys()
-
         print(f"{len(gids)} GIDS TO PROCESS")
         for idx, gid in enumerate(gids):
-            activities = self.get_gid_activities(gid)
-            voteTimeStamps = self.get_gid_votes(gid)
-            for activity in activities:
-                for voteTime in voteTimeStamps:
-                    belongs = self.vote_belongs_to_activity(
-                        voteTime, activity['activityTime'])
-                    if(belongs):
-                        self.votes_dataframe = self.update_df_with_activity(
-                            activity, voteTime, gid)
-            self.votes_dataframe.to_json('/tmp/votes_analytics.json')
+            try:
+                activities = self.get_gid_activities(gid)
+                voteTimeStamps = self.get_gid_votes(gid)
+                for activity in activities:
+                    for voteTime in voteTimeStamps:
+                        belongs = self.vote_belongs_to_activity(
+                            voteTime, activity['activityTime'])
+                        if(belongs):
+                            self.votes_dataframe = self.update_df_with_activity(
+                                activity, voteTime, gid)
+                self.votes_dataframe.to_json('/tmp/votes_analytics.json')
+            except Exception as err:
+                print(err)
+                pass
             if(idx % 100 == 0):
                 print(f'{idx} GIDS processed')
