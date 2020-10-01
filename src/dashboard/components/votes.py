@@ -23,7 +23,6 @@ class VotesComponent():
     def __init__(self, app):
         self.app = app
         self.service = VotesService()
-        self.export_component = ExportsComponent("votes")
         self.prepare()
 
     def prepare(self):
@@ -34,6 +33,7 @@ class VotesComponent():
             self.utm_campaign_options = []
             self.register_callbacks()
             self.service.set_filters_options(self)
+            self.export_component = ExportsComponent("votes", app, self.df)
         except Exception as err:
             print(err)
 
@@ -158,13 +158,6 @@ class VotesComponent():
 
     def register_callbacks(self):
         if(not self.df.empty):
-            @self.app.callback(
-                Output("votes_download_export", 'href'),
-                [Input('votes_exports_df', 'n_clicks')]
-            )
-            def export_callback(export_df):
-                return self.export_component.export(self.df)
-
             @self.app.callback(
                 Output("votes_loader", 'children'),
                 [Input('analytics_campaign_source', 'value'),

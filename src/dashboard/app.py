@@ -25,7 +25,7 @@ class App():
             html.Nav(
                 className="navbar navbar-light bg-white topbar mb-4 static-top shadow", children=[
                     html.Img(src="./assets/logo-ej-mini.png"),
-                    html.Button(className='reload-btn', children=[html.I(className='fa fa-repeat')],
+                    html.Button(className='dash-icon', children=[html.I(className='fa fa-repeat')],
                                 id='app_reload', n_clicks=0),
                 ]),
             html.Div(id="app",

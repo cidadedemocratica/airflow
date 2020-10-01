@@ -10,8 +10,9 @@ import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-from services.analytics import AnalyticsService
+
 from components.utils.export import ExportsComponent
+from components.analytics.service import AnalyticsService
 from components.analytics.filters import FiltersComponent
 from components.analytics.callbacks import CallbacksComponent
 
@@ -31,9 +32,10 @@ class AnalyticsComponent():
     def prepare(self):
         self.ej_users_count = 1
         self.analytics_users_count = 1
-        self.export_component = ExportsComponent("analytics")
+        self.export_component = ExportsComponent(
+            "analytics", self.app, self.df)
         self.filters_component = FiltersComponent()
-        self.callbacks = CallbacksComponent(self)
+        self.callbacks = CallbacksComponent(self, self.export_component)
         self.callbacks.create()
 
     def render(self):
@@ -71,13 +73,28 @@ class AnalyticsComponent():
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Engajamento vs Aquisição (EJ)']),
-                    html.Div(className="card-body",
-                             children=["Não há dados para apresentar"])
+                    html.Div(className="card-body", children=[
+                        html.Div(children=[
+                            html.Div(style={"flexGrow": "1"}, children=[
+                                self.filters_component.render(
+                                    self.df, self.service),
+                                self.export_component.render(),
+                            ]),
+                            html.Span("Não há dados para apresentar"),
+                            dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
+                                html.Div(id="analytics_filters",
+                                         children=[self.get_figure()])
+                            ])
+                        ])
+                    ])
                 ])
             ])
         ])
 
     def get_figure(self):
+
+        if(self.df.empty):
+            return
         fig = go.Figure(layout={'title': {'text': '', 'x': 0.5,
                                           'font': {'size': 16, 'color': '#ff3e72', 'family': 'Times New Roman'}},
                                 'xaxis': {'visible': False},

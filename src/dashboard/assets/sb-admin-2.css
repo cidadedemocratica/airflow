@@ -11296,9 +11296,22 @@ padding-left: 25px;
   margin-right: 5px;
 }
 
-.reload-btn {
+.dash-icon {
    background-color: var(--white);
-   color: var(--cyan) 
+   color: var(--cyan);
+   outline: none !important;
+}
+
+.with-text {
+   display: flex;
+   width: 95%;
+   margin: auto;
+   padding: unset;
+   font-weight: bold;
+}
+
+.with-text div:first-child{
+   margin-right: 5px;
 }
 
 .reload-btn[data-dash-is-loading="true"]{

@@ -15,20 +15,14 @@ class CommentsComponent():
     def __init__(self, app):
         self.app = app
         self.service = CommentsService()
-        self.export_component = ExportsComponent("comments")
         self.comments = self.service.comments
         self.order_options = ['concorda',
                               'discorda', 'pulados', 'convergência']
+        self.export_component = ExportsComponent(
+            "comments", app, self.comments)
         self.add_callbacks()
 
     def add_callbacks(self):
-        @self.app.callback(
-            Output("comments_download_export", 'href'),
-            [Input("comments_exports_df", 'n_clicks')]
-        )
-        def export_callback(export_df):
-            return self.export_component.export(self.comments)
-
         @self.app.callback(
             Output("table_body", 'children'),
             [Input('_filter', 'value'),
@@ -46,6 +40,7 @@ class CommentsComponent():
             if(_filter in self.order_options):
                 df = df.sort_values(by=_filter, ascending=False)
                 return self._generate_table_body(df)
+            self.export_component.df = df
             return self._generate_table_body(df)
 
     def render(self):
@@ -54,15 +49,14 @@ class CommentsComponent():
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
                         html.Div(className="card-header", children=[
-                            'Votos e participação em todos os comentários.']),
+                            'Votos e participação em todos os comentários.'
+                        ]),
                         html.Div(className="card-body", children=[
                             html.Div(children=[
                                 dcc.Loading(id="comments_loader", type="default", color="#30bfd3", children=[
                                     html.Div(id="commments_filters",
                                              children=[self._get_table()])
                                 ]),
-                                html.Hr(),
-                                self.export_component.render(),
                             ])
                         ])
                     ])
@@ -80,8 +74,6 @@ class CommentsComponent():
                                 html.Div(id="commments_filters",
                                          children=[self._get_table()])
                             ]),
-                            html.Hr(),
-                            self.export_component.render(),
                         ])
                     ])
                 ])
@@ -106,8 +98,6 @@ class CommentsComponent():
     def _generate_table_body(self, df=pd.DataFrame({})):
         if(self.comments.empty):
             return
-        if(df.empty):
-            df = self.comments
         trs = []
         for index in range(len(df)):
             tds = []
@@ -242,6 +232,7 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
+                self.export_component.render(),
                 html.Div(className='table-wrapper',
                          children=[self._generate_table()])
             ])

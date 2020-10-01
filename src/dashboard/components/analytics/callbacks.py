@@ -5,20 +5,14 @@ from dash.dependencies import Input, Output
 
 class CallbacksComponent():
 
-    def __init__(self, component):
-        self.component = component
-        self.app = component.app
-        self.df = component.df
-        self.service = component.service
+    def __init__(self, analytics_component, export_component):
+        self.component = analytics_component
+        self.app = analytics_component.app
+        self.df = analytics_component.df
+        self.service = analytics_component.service
+        self.export = export_component
 
     def create(self):
-        @self.app.callback(
-            Output("analytics_download_export", 'href'),
-            [Input('analytics_exports_df', 'n_clicks')]
-        )
-        def export_callback(analytics_exports_df):
-            return self.component.export_component.export(self.component.df)
-
         @self.app.callback(
             Output("analytics_loader", 'children'),
             [Input('campaign_source', 'value'),
@@ -57,7 +51,15 @@ class CallbacksComponent():
                 df, campaign_name, start_date, end_date)
             self.set_campaign_medium_filter(df,
                                             campaign_medium, start_date, end_date)
+            self.set_export_data(start_date, end_date)
             return self.component.get_figure()
+
+    def set_export_data(self, start_date, end_date):
+        data = [{'page_visits': self.component.analytics_users_count,
+                 'ej_participants': self.component.ej_users_count,
+                 'start_date': start_date,
+                 'end_date': end_date}]
+        self.export.df = pd.DataFrame(data)
 
     def set_date_range_filter(self, df, start_date, end_date):
         if(start_date and end_date):

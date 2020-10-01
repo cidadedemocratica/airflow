@@ -12,21 +12,44 @@ from dash.dependencies import Input, Output
 
 class ExportsComponent():
 
-    def __init__(self, id_prefix):
+    def __init__(self, id_prefix, app, df):
         self.id_prefix = id_prefix
+        self.app = app
+        self.df = df
+        self.data_link_display = 'none'
+        self.add_callbacks()
 
     def render(self):
         return html.Div(style={'marginTop': '10px'}, children=[
-            html.Button(
-                'Exportar', id=f"{self.id_prefix}_exports_df", n_clicks=0),
-            html.Div(children=[
-                html.A('Clique aqui para baixar', href='', id=f'{self.id_prefix}_download_export',
-                       download='ej-raw-data.csv', target="_blank")
+            html.Button(className='dash-icon with-text', id=f"exporting_{self.id_prefix}", n_clicks=0, children=[
+                html.Div(children=[
+                        html.I(className='fa fa-2x fa-download'),
+                        ]),
+                html.Div(children=[
+                    html.Span('Exportar como csv')
+                ])
+            ]),
+            dcc.Loading(id=f"{self.id_prefix}_exporting_loader", type="default", color="#30bfd3", children=[
+                html.Div(id=f'export_{self.id_prefix}_data', children=[
+                    html.A('data.csv',  style={
+                           'display': 'none'}, href='', download='ej-raw-data.csv', target="_blank")
+                ]),
             ]),
         ])
 
-    def export(self, df):
-        dataAsCSV = df.to_csv()
+    def add_callbacks(self):
+        @self.app.callback(
+            Output(f"export_{self.id_prefix}_data", 'children'),
+            [Input(f"exporting_{self.id_prefix}", 'n_clicks')]
+        )
+        def export_callback(exporting_click):
+            if(exporting_click > 0):
+                return self.link_to_download()
+
+    def link_to_download(self):
+        dataAsCSV = self.df.to_csv()
         urlToDownload = "data:text/csv;charset=utf-8," + \
             urllib.parse.quote(dataAsCSV)
-        return urlToDownload
+        self.data_link_display = 'block'
+        return html.A('data.csv',  style={
+            'display': self.data_link_display}, href=urlToDownload, download='ej-raw-data.csv', target="_blank")
