@@ -77,11 +77,14 @@ class VotesService():
         mtc_emails = df.mtc_email
         fallback_emails = df.email
         include_rows = []
-        for idx, email in enumerate(mtc_emails):
-            if (email != None):
+        for idx, mtc_email in enumerate(mtc_emails):
+            if (mtc_email != ''):
                 include_rows.append(True)
-            elif ('mautic@mail.com' not in fallback_emails[idx]):
+                continue
+            if (mtc_email == '' and ('mautic@mail.com' not in fallback_emails[idx])):
                 include_rows.append(True)
-            else:
+                continue
+            if(mtc_email == '' and 'mautic@mail.com' in fallback_emails[idx]):
                 include_rows.append(False)
+                continue
         return df[include_rows]

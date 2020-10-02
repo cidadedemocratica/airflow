@@ -189,4 +189,5 @@ class VotesComponent():
                 if(email == ['is_valid']):
                     self.df = self.service.filter_by_email(self.df)
 
+                self.export_component.df = self.df
                 return self.get_figure()
