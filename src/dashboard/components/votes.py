@@ -33,7 +33,8 @@ class VotesComponent():
             self.utm_campaign_options = []
             self.register_callbacks()
             self.service.set_filters_options(self)
-            self.export_component = ExportsComponent("votes", app, self.df)
+            self.export_component = ExportsComponent(
+                "votes", self.app, self.df)
         except Exception as err:
             print(err)
 
@@ -173,19 +174,19 @@ class VotesComponent():
                     self.service.load_data()
                     self.df = self.service.df
                 self.df = self.service.df
+                if(start_date or end_date):
+                    self.df = self.service.filter_by_date(
+                        start_date, end_date)
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_source', analytics_campaign_source)
-                elif(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
+                if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_medium', analytics_campaign_medium)
-                elif(analytics_campaign_name and len(analytics_campaign_name) >= 3):
+                if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_campaign', analytics_campaign_name)
-                elif(email == ['is_valid']):
+                if(email == ['is_valid']):
                     self.df = self.service.filter_by_email(self.df)
-                elif(start_date or end_date):
-                    self.df = self.service.filter_by_date(
-                        start_date, end_date)
 
                 return self.get_figure()

@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 from airflow.utils.dates import days_ago
-from src.airflow.operators import EjApiOperator, MauticApiOperator, AnalyticsApiOperator
+from src.airflow.operators import EjApiOperator, MauticApiOperator, AnalyticsApiOperator, MergeAnalyticsMauticOperator
 from airflow.models import DAG
 from dateutil.parser import *
 from src import analytics_api as analytics
@@ -50,14 +50,20 @@ t3 = EjApiOperator(
     dag=dag)
 
 t4 = MauticApiOperator(
-    task_id="merge_votes_and_contacts",
+    task_id="merge_votes_with_mautic",
     log_response=True,
     dag=dag)
 
 t5 = AnalyticsApiOperator(
-    task_id="merge_with_analytics",
+    task_id="merge_votes_with_analytics",
     log_response=True,
     dag=dag)
 
-t1 >> [t5, t4]
+t6 = MergeAnalyticsMauticOperator(
+    task_id="merge_analytics_mautic",
+    log_response=True,
+    dag=dag
+)
+
+t1 >> [t5, t4] >> t6
 t2, t3

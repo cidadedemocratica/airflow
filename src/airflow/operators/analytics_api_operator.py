@@ -36,7 +36,7 @@ class AnalyticsApiOperator(BaseOperator):
         utc_vote_date = parse(voteCreatedTime) - datetime.timedelta(hours=3)
         utc_offeset_timedelta = datetime.datetime.utcnow() - datetime.datetime.now()
         utc_activity_time = parse(activityTime) + utc_offeset_timedelta
-        deltaDate = utc_activity_time + datetime.timedelta(minutes=5)
+        deltaDate = utc_activity_time + datetime.timedelta(minutes=30)
         return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
 
     def get_gid_votes(self, _id):
