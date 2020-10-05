@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
+from components.utils.date_picker import dataframe_between_dates
 
 from dateutil.parser import *
 from dateutil.tz import *
@@ -26,7 +27,7 @@ class VotesService():
             reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
         """
         try:
-            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+            self.df = pd.read_json('/tmp/backups/votes_analytics_mautic.json')
         except Exception as err:
             print(f"Error on votes service: {err}")
 
@@ -47,44 +48,18 @@ class VotesService():
 
     def filter_by_date(self, start_date, end_date):
         if(start_date and end_date):
-            return self.dataframe_between_dates(
+            return dataframe_between_dates(
                 self.df, datetime.datetime.fromisoformat(start_date).date(), datetime.datetime.fromisoformat(end_date).date())
         if(start_date):
-            return self.dataframe_between_dates(
+            return dataframe_between_dates(
                 self.df, datetime.datetime.fromisoformat(start_date).date(), None)
         if(end_date):
-            return self.dataframe_between_dates(
+            return dataframe_between_dates(
                 self.df, None, datetime.datetime.fromisoformat(end_date).date())
 
     def filter_by_utm(self, df, utm_name, utm_value):
         return df[df[utm_name] == utm_value]
 
-    def dataframe_between_dates(self, df, first_day, last_day):
-        if(first_day and last_day):
-            partial_df = df[df['criado'].map(lambda x: parse(
-                x).date() >= first_day and parse(x).date() <= last_day)]
-            return pd.DataFrame(partial_df)
-        elif (first_day and not last_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() >= first_day)]
-            return pd.DataFrame(partial_df)
-        elif (last_day and not first_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() <= last_day)]
-            return pd.DataFrame(partial_df)
-
     def filter_by_email(self, df):
-        mtc_emails = df.mtc_email
-        fallback_emails = df.email
-        include_rows = []
-        for idx, mtc_email in enumerate(mtc_emails):
-            if (mtc_email != ''):
-                include_rows.append(True)
-                continue
-            if (mtc_email == '' and ('mautic@mail.com' not in fallback_emails[idx])):
-                include_rows.append(True)
-                continue
-            if(mtc_email == '' and 'mautic@mail.com' in fallback_emails[idx]):
-                include_rows.append(False)
-                continue
-        return df[include_rows]
+        return df[(df.mtc_email != '') | ((df.mtc_email == '')
+                                          & ('mautic@mail.com' not in df.email))]

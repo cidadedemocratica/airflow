@@ -1,6 +1,7 @@
 import datetime
 import pandas as pd
 from dash.dependencies import Input, Output
+from components.utils.date_picker import dataframe_between_dates
 
 
 class CallbacksComponent():
@@ -38,7 +39,7 @@ class CallbacksComponent():
             start_date = datetime.datetime.fromisoformat(start_date).date()
             end_date = datetime.datetime.fromisoformat(end_date).date()
 
-            df = self.service.dataframe_between_dates(
+            df = dataframe_between_dates(
                 self.component.df,
                 start_date,
                 end_date
@@ -65,7 +66,7 @@ class CallbacksComponent():
         if(start_date and end_date):
             analytics_filter = self.service.get_date_filter(
                 start_date, end_date)
-            self.count_users(df, analytics_filter, start_date, end_date)
+            self.count_users(df, analytics_filter)
 
     def set_campaign_medium_filter(self, df, campaign_medium, start_date, end_date):
         if(campaign_medium and len(campaign_medium) >= 3):
@@ -73,14 +74,14 @@ class CallbacksComponent():
 
             analytics_filter = self.service.get_medium_filter(
                 campaign_medium, start_date, end_date)
-            self.count_users(df, analytics_filter, start_date, end_date)
+            self.count_users(df, analytics_filter)
 
     def set_campaign_name_filter(self, df, campaign_name, start_date, end_date):
         if(campaign_name and len(campaign_name) >= 3):
             df = df[df['analytics_campaign'] == campaign_name]
             analytics_filter = self.service.get_name_filter(
                 campaign_name, start_date, end_date)
-            self.count_users(df, analytics_filter, start_date, end_date)
+            self.count_users(df, analytics_filter)
 
     def set_campaign_source_filter(self, df, campaign_source, start_date, end_date):
         if(campaign_source and len(campaign_source) >= 3):
@@ -89,9 +90,9 @@ class CallbacksComponent():
 
             analytics_filter = self.service.get_campaign_filter(
                 campaign_source, start_date, end_date)
-            self.count_users(df, analytics_filter, start_date, end_date)
+            self.count_users(df, analytics_filter)
 
-    def count_users(self, df, analytics_filter, start_date, end_date):
+    def count_users(self, df, analytics_filter):
         self.component.analytics_users_count = self.service.filter_by_analytics(
             analytics_filter)
         self.component.ej_users_count = int(len(df['email'].value_counts()))

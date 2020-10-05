@@ -24,8 +24,7 @@ class MauticApiOperator(BaseOperator):
 
     def execute(self, context):
         self._get_votes()
-        df = self.merge_votes_and_contacts()
-        self._df_to_json(df)
+        self.merge_votes_and_contacts()
 
     def _get_votes(self):
         self.votes_df = pd.read_json('/tmp/votes.json')
@@ -35,22 +34,20 @@ class MauticApiOperator(BaseOperator):
         votes['mtc_email'] = ''
         votes['mtc_first_name'] = ''
         votes['mtc_last_name'] = ''
-        uniq_emails = votes.email.value_counts().keys()
+        mtc_ids = votes.author__metadata__mautic_id.value_counts().keys()
         print(
-            f'Airflow will request {len(uniq_emails)} contacts on mautic api')
-        for counter, row in enumerate(uniq_emails):
+            f'Airflow will request {len(mtc_ids)} contacts on mautic api')
+        for mtc_id in mtc_ids:
             try:
-                mtc_id = str(int(row["author__metadata__mautic_id"]))
+                mtc_id = str(int(mtc_id))
                 if(mtc_id):
                     mtc_contact = self._get_contact(mtc_id)
-                    votes = self._merge(
-                        votes, mtc_contact, row["email"])
+                    votes = self._merge(votes, mtc_contact, mtc_id)
                     votes.to_json('/tmp/votes_mautic.json')
-                print(f'{counter} requests made. Contact {row["email"]}')
+                print(f'mautic id {mtc_id} requested')
             except Exception as err:
                 print(f'{err}')
                 pass
-        return votes
 
     def _get_contact(self, mtc_id):
         url = self._get_url(mtc_id)
@@ -62,11 +59,14 @@ class MauticApiOperator(BaseOperator):
     def _get_url(self, mtc_id):
         return f"{self.connection.schema}://{self.connection.host}/api/contacts/{mtc_id}"
 
-    def _merge(self, df, contact, email):
+    def _merge(self, df, contact, mtc_id):
         mautic_email = contact["fields"]["all"]["email"]
         first_name = contact["fields"]["all"]["firstname"]
         last_name = contact["fields"]["all"]["lastname"]
-        df.loc[df['email'] == email, 'mtc_email'] = mautic_email
-        df.loc[df['email'] == email, 'mtc_first_name'] = first_name
-        df.loc[df['email'] == email, 'mtc_last_name'] = last_name
+        df.loc[df['email'] == f'{mtc_id}-mautic@mail.com',
+               'mtc_email'] = mautic_email
+        df.loc[df['email'] == f'{mtc_id}-mautic@mail.com',
+               'mtc_first_name'] = first_name
+        df.loc[df['email'] == f'{mtc_id}-mautic@mail.com',
+               'mtc_last_name'] = last_name
         return df

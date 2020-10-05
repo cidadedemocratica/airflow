@@ -12,6 +12,7 @@ import datetime
 from datetime import date
 from services.votes import VotesService
 from components.utils.export import ExportsComponent
+from components.utils.date_picker import *
 
 
 class VotesComponent():
@@ -133,7 +134,7 @@ class VotesComponent():
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
                     html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="emails válidos?: "),
+                              children="visualizar apenas emails válidos"),
                     dcc.Checklist(
                         id='email',
                         options=[
@@ -150,7 +151,9 @@ class VotesComponent():
                         id='votes_by_date',
                         clearable=True,
                         style={"flexGrow": 1},
-                    ),
+                         end_date=get_default_end_date(),
+                         start_date=get_default_start_date(),
+                         ),
                 ])
                 ]),
             ]),
@@ -172,11 +175,12 @@ class VotesComponent():
             def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date, app_reload):
                 if(app_reload != 0):
                     self.service.load_data()
-                    self.df = self.service.df
                 self.df = self.service.df
-                if(start_date or end_date):
-                    self.df = self.service.filter_by_date(
-                        start_date, end_date)
+                self.df = dataframe_between_dates(
+                    self.df,
+                    start_date,
+                    end_date
+                )
                 if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
                     self.df = self.service.filter_by_utm(
                         self.df, 'analytics_source', analytics_campaign_source)

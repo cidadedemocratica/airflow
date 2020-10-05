@@ -1,6 +1,6 @@
 import dash_html_components as html
 import dash_core_components as dcc
-import datetime
+from components.utils.date_picker import *
 
 
 class FiltersComponent():
@@ -63,8 +63,8 @@ class FiltersComponent():
                         id='by_date',
                         clearable=True,
                         style={"flexGrow": 1},
-                         end_date=self._get_default_end_date(),
-                         start_date=self._get_default_start_date(),
+                         end_date=get_default_end_date(),
+                         start_date=get_default_start_date(),
                          ),
                 ])
                 ]),
@@ -76,9 +76,3 @@ class FiltersComponent():
             ])
         ],
         )
-
-    def _get_default_end_date(self):
-        return datetime.datetime.now()
-
-    def _get_default_start_date(self):
-        return datetime.datetime.now() - datetime.timedelta(days=30)
