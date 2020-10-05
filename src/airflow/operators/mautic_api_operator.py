@@ -35,21 +35,18 @@ class MauticApiOperator(BaseOperator):
         votes['mtc_email'] = ''
         votes['mtc_first_name'] = ''
         votes['mtc_last_name'] = ''
-        uniq_emails = votes.groupby(
-            'email').count().reset_index(level=0)
+        uniq_emails = votes.email.value_counts().keys()
         print(
             f'Airflow will request {len(uniq_emails)} contacts on mautic api')
-        for counter, row in enumerate(uniq_emails.loc()):
+        for counter, row in enumerate(uniq_emails):
             try:
                 mtc_id = str(int(row["author__metadata__mautic_id"]))
                 if(mtc_id):
                     mtc_contact = self._get_contact(mtc_id)
-                    votes = self.helper.merge(
+                    votes = self._merge(
                         votes, mtc_contact, row["email"])
                     votes.to_json('/tmp/votes_mautic.json')
                 print(f'{counter} requests made. Contact {row["email"]}')
-                if(counter == len(uniq_emails) - 1):
-                    break
             except Exception as err:
                 print(f'{err}')
                 pass
@@ -64,3 +61,12 @@ class MauticApiOperator(BaseOperator):
 
     def _get_url(self, mtc_id):
         return f"{self.connection.schema}://{self.connection.host}/api/contacts/{mtc_id}"
+
+    def _merge(self, df, contact, email):
+        mautic_email = contact["fields"]["all"]["email"]
+        first_name = contact["fields"]["all"]["firstname"]
+        last_name = contact["fields"]["all"]["lastname"]
+        df.loc[df['email'] == email, 'mtc_email'] = mautic_email
+        df.loc[df['email'] == email, 'mtc_first_name'] = first_name
+        df.loc[df['email'] == email, 'mtc_last_name'] = last_name
+        return df
