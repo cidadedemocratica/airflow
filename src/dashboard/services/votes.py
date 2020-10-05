@@ -27,7 +27,7 @@ class VotesService():
             reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
         """
         try:
-            self.df = pd.read_json('/tmp/backups/votes_analytics_mautic.json')
+            self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
         except Exception as err:
             print(f"Error on votes service: {err}")
 
