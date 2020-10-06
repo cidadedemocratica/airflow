@@ -14,7 +14,6 @@ from dash.dependencies import Input, Output
 from components.utils.export import ExportsComponent
 from components.analytics.service import AnalyticsService
 from components.analytics.filters import FiltersComponent
-from components.analytics.callbacks import CallbacksComponent
 
 
 class AnalyticsComponent():
@@ -34,9 +33,8 @@ class AnalyticsComponent():
         self.analytics_users_count = 1
         self.export_component = ExportsComponent(
             "analytics", self.app, self.df)
-        self.filters_component = FiltersComponent()
-        self.callbacks = CallbacksComponent(self, self.export_component)
-        self.callbacks.create()
+        self.filters_component = FiltersComponent(
+            self.service, self.app, self, self.export_component)
 
     def render(self):
         """
@@ -52,8 +50,7 @@ class AnalyticsComponent():
                         html.Div(className="card-body", children=[
                             html.Div(style={"display": "flex", "width": "90%"}, children=[
                                 html.Div(style={"flexGrow": "1"}, children=[
-                                    self.filters_component.render(
-                                        self.df, self.service),
+                                    self.filters_component.render(),
                                     html.Hr(),
                                     self.export_component.render(),
                                 ]),
@@ -108,7 +105,7 @@ class AnalyticsComponent():
             {
                 'x': '-50',
                 'y': '50',
-                'text': f'<b>{round((self.ej_users_count/self.analytics_users_count) * 100,2) }%</b>',
+                'text': f'<b>{self.aquisition_percentage()}%</b>',
                 'font': {'color': '#fff', 'size': 15},
                 'align': 'center',
                 'showarrow': False
@@ -138,8 +135,7 @@ class AnalyticsComponent():
             x=[-50], y=[50],
             mode='markers',
             marker=dict(
-                size=[(300 / self.analytics_users_count)
-                      * self.ej_users_count],
+                size=[self.engagement_buble_size()],
                 color='#C4F2F4',
                 sizeref=1.1,
                 maxdisplayed=1),
@@ -154,3 +150,13 @@ class AnalyticsComponent():
             ),
             dcc.Graph(figure=fig)
         ])
+
+    def aquisition_percentage(self):
+        if(self.analytics_users_count == 0):
+            return 0.0
+        return round((self.ej_users_count/self.analytics_users_count) * 100, 2)
+
+    def engagement_buble_size(self):
+        if(self.analytics_users_count == 0):
+            return (300 / 1) * self.ej_users_count
+        return (300 / self.analytics_users_count) * self.ej_users_count

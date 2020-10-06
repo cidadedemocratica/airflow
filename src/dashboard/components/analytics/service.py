@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
+from components.utils.date_picker import filter_dataframe_by_date, get_default_end_date, get_default_start_date
 
 from dateutil.parser import *
 from dateutil.tz import *
@@ -38,15 +39,15 @@ class AnalyticsService():
             print(f"Error on analytics service: {err}")
             pass
 
-    def filter_by_analytics(self, _filter):
-        if (_filter == {}):
-            _filter = self.get_default_filter()
-        analytics_users = self.get_analytics_new_users(_filter)
-        return int(analytics_users)
+    def get_analytics_users(self, query):
+        if (query == {}):
+            query = self.get_default_filter()
+        response = analytics.get_report(self.analytics_client, query)
+        return self.get_report_total_value(response)
 
     def get_date_filter(self, start_date, end_date):
-        start_date = start_date.strftime("%Y-%m-%d")
-        end_date = end_date.strftime("%Y-%m-%d")
+        start_date = start_date.split('T')[0]
+        end_date = end_date.split('T')[0]
         return {
             "reportRequests": [
                 {
@@ -70,15 +71,15 @@ class AnalyticsService():
         }
 
     def get_campaign_filter(self, campaign, start_date, end_date):
-        startDate = start_date.strftime("%Y-%m-%d")
-        endDate = end_date.strftime("%Y-%m-%d")
+        start_date = start_date.split('T')[0]
+        end_date = end_date.split('T')[0]
         return {
             "reportRequests": [
                 {
                     "viewId": self.view_id,
                     "dateRanges": {
-                        "startDate": startDate,
-                        "endDate": endDate
+                        "startDate": start_date,
+                        "endDate": end_date
                     },
                     "metrics": [{
                         "expression": "ga:users",
@@ -98,15 +99,15 @@ class AnalyticsService():
         }
 
     def get_name_filter(self, campaign_name, start_date, end_date):
-        startDate = start_date.strftime("%Y-%m-%d")
-        endDate = end_date.strftime("%Y-%m-%d")
+        start_date = start_date.split('T')[0]
+        end_date = end_date.split('T')[0]
         return {
             "reportRequests": [
                 {
                     "viewId": self.view_id,
                     "dateRanges": {
-                        "startDate": startDate,
-                        "endDate": endDate
+                        "startDate": start_date,
+                        "endDate": end_date
                     },
                     "metrics": [{
                         "expression": "ga:users",
@@ -126,15 +127,15 @@ class AnalyticsService():
         }
 
     def get_medium_filter(self, campaign_medium, start_date, end_date):
-        startDate = start_date.strftime("%Y-%m-%d")
-        endDate = end_date.strftime("%Y-%m-%d")
+        start_date = start_date.split('T')[0]
+        end_date = end_date.split('T')[0]
         return {
             "reportRequests": [
                 {
                     "viewId": self.view_id,
                     "dateRanges": {
-                        "startDate": startDate,
-                        "endDate": endDate
+                        "startDate": start_date,
+                        "endDate": end_date
                     },
                     "metrics": [{
                         "expression": "ga:users",
@@ -153,44 +154,37 @@ class AnalyticsService():
             "useResourceQuotas": False
         }
 
-    def get_analytics_new_users(self, _filter):
-        response = analytics.get_report(self.analytics_client, _filter)
-        return self.parse_report(response)
-
-    def parse_report(self, reports):
+    def get_report_total_value(self, reports):
         report = reports.get('reports')[0]
         if report:
             new_users = report.get('data').get('totals')[0].get('values')[0]
-            return new_users
+            return int(new_users)
 
-    def dataframe_between_dates(self, df, first_day, last_day):
-        if(first_day and last_day):
-            partial_df = df[df['criado'].map(lambda x: parse(
-                x).date() >= first_day and parse(x).date() <= last_day)]
-            return pd.DataFrame(partial_df)
-        elif (first_day and not last_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() < first_day)]
-            return pd.DataFrame(partial_df)
-        elif (last_day and not first_day):
-            partial_df = df[df['criado'].map(
-                lambda x: parse(x).date() > last_day)]
-            return pd.DataFrame(partial_df)
+    def filter_dataframe_by_date(self, df, start_date, end_date):
+        return filter_dataframe_by_date(df, start_date, end_date)
 
-    def set_filters_options(self, component, df=pd.DataFrame({})):
-        if(df.empty):
-            return
-        df = df.groupby(['email',
-                         'analytics_campaign',
-                         'analytics_source',
-                         'analytics_medium']) \
-            .count().reset_index(level=0).reset_index(level=0) \
-            .reset_index(level=0) \
-            .reset_index(level=0) \
-            .sort_values(by='criado', ascending=False)
-        component.utm_source_options = df['analytics_source'].value_counts(
-        ).keys()
-        component.utm_medium_options = df['analytics_medium'].value_counts(
-        ).keys()
-        component.utm_campaign_options = df['analytics_campaign'].value_counts(
-        ).keys()
+    def get_default_end_date(self):
+        return get_default_end_date()
+
+    def get_default_start_date(self):
+        return get_default_start_date()
+
+    def filter_analytics_users_by_utm_source(self, df, campaign_source, start_date, end_date):
+        utm_source_query = self.get_campaign_filter(
+            campaign_source, start_date, end_date)
+        return self.get_analytics_users(utm_source_query)
+
+    def filter_analytics_users_by_utm_name(self, df, campaign_name, start_date, end_date):
+        utm_name_query = self.get_name_filter(
+            campaign_name, start_date, end_date)
+        return self.get_analytics_users(utm_name_query)
+
+    def filter_analytics_users_by_utm_medium(self, df, campaign_medium, start_date, end_date):
+        utm_medium_query = self.get_medium_filter(
+            campaign_medium, start_date, end_date)
+        return self.get_analytics_users(utm_medium_query)
+
+    def filter_analytics_users_by_date(self, df, start_date, end_date):
+        date_query = self.get_date_filter(
+            start_date, end_date)
+        return self.get_analytics_users(date_query)
