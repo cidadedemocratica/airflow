@@ -1,7 +1,7 @@
 import datetime
 import pandas as pd
 from dash.dependencies import Input, Output
-from components.utils.date_picker import dataframe_between_dates
+from components.utils.date_picker import filter_dataframe_by_date
 
 
 class CallbacksComponent():
@@ -39,7 +39,7 @@ class CallbacksComponent():
             start_date = datetime.datetime.fromisoformat(start_date).date()
             end_date = datetime.datetime.fromisoformat(end_date).date()
 
-            df = dataframe_between_dates(
+            df = filter_dataframe_by_date(
                 self.component.df,
                 start_date,
                 end_date

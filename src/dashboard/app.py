@@ -2,7 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from components.comments import CommentsComponent
-from components.votes import VotesComponent
+from components.votes.votes import VotesComponent
 from components.analytics.analytics import AnalyticsComponent
 from dash.dependencies import Input, Output
 

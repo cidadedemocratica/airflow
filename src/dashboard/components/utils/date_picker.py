@@ -10,7 +10,7 @@ def get_default_start_date():
     return datetime.datetime.now() - datetime.timedelta(days=30)
 
 
-def dataframe_between_dates(df, first_day, last_day):
+def filter_dataframe_by_date(df, first_day, last_day):
     first_day = pd.to_datetime(first_day).tz_localize('UTC')
     last_day = pd.to_datetime(last_day).tz_localize('UTC')
     df.criado = pd.to_datetime(df.criado)
