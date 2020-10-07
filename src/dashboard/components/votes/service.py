@@ -28,6 +28,7 @@ class VotesService():
         """
         try:
             self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
+            self.df.mtc_email.fillna('-', inplace=True)
         except Exception as err:
             print(f"Error on votes service: {err}")
 
@@ -45,8 +46,7 @@ class VotesService():
 
     def filter_by_email(self, df, email):
         if(email == ['is_valid']):
-            return df[(df.mtc_email != '') | ((df.mtc_email == '')
-                                              & ('mautic@mail.com' not in df.email))]
+            return df[(df.mtc_email != '-') | (df.email.str.contains('mautic@mail.com') == False)]
         return df
 
     def filter_dataframe_by_date(self, df, start_date, end_date):
