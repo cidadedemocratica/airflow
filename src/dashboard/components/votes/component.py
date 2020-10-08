@@ -31,6 +31,9 @@ class VotesComponent():
             self.service, app, self, self.export_component)
 
     def get_figure(self):
+        if(self.df.empty):
+            return html.Div(children=[html.Span("Não há dados para apresentar")])
+
         df = self.service.groupby(self.df)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
@@ -48,37 +51,26 @@ class VotesComponent():
         return html.Div(children=[dcc.Graph(figure=fig)])
 
     def render(self):
-        if(not self.df.empty):
-            return html.Div(className="row", children=[
-                html.Div(className="col-12 mb-4", children=[
-                    html.Div(className="card shadow", children=[
-                        html.Div(className="card-header", children=[
-                            'Aquisição Qualificada']),
-                        html.Div(className="card-body", children=[
-                            html.Div(style={"display": "flex", "width": "90%"}, children=[
-                                html.Div(style={"flexGrow": "1"}, children=[
-                                    self.filters_component.render(),
-                                    html.Hr(),
-                                    self.export_component.render(),
-                                ]),
-                                dcc.Loading(id="votes_loader", type="default", color="#30bfd3", children=[
-                                    html.Div(id="votes_filters",
-                                             style={"flexGrow": 1, "width": "60%"}, children=[
-                                                 self.get_figure()
-                                             ])
-                                ])
-                            ])
-                        ])
-                    ])
-                ])
-            ])
         return html.Div(className="row", children=[
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
                         'Aquisição Qualificada']),
-                    html.Div(className="card-body",
-                             children=["Não há dados para apresentar"])
+                    html.Div(className="card-body", children=[
+                        html.Div(style={"display": "flex", "width": "90%"}, children=[
+                            html.Div(style={"flexGrow": "1"}, children=[
+                                self.filters_component.render(),
+                                html.Hr(),
+                                self.export_component.render(),
+                            ]),
+                            dcc.Loading(id="votes_loader", type="default", color="#30bfd3", children=[
+                                html.Div(id="votes_filters",
+                                         style={"flexGrow": 1, "width": "60%"}, children=[
+                                             self.get_figure()
+                                         ])
+                            ])
+                        ])
+                    ])
                 ])
             ])
         ])

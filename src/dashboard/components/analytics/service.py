@@ -20,7 +20,6 @@ class AnalyticsService():
     """
 
     def __init__(self):
-        self.df = pd.DataFrame({})
         # analytics view id
         self.view_id = "215248741"
         self.analytics_days_range = 30
@@ -29,9 +28,10 @@ class AnalyticsService():
 
     def load_data(self):
         """
-            reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
+            reads the data stored by airflow on /tmp/votes_analytics.json.
             Also initializes analytics api client.
         """
+        self.df = pd.DataFrame({})
         try:
             self.df = pd.read_json('/tmp/votes_analytics.json')
             self.analytics_client = analytics.initialize_analyticsreporting()

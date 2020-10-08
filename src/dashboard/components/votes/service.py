@@ -19,13 +19,13 @@ class VotesService():
     """
 
     def __init__(self):
-        self.df = pd.DataFrame({})
         self.load_data()
 
     def load_data(self):
         """
             reads the data stored by airflow on /tmp/votes_analytics_mautic.json.
         """
+        self.df = pd.DataFrame({})
         try:
             self.df = pd.read_json('/tmp/votes_analytics_mautic.json')
             self.df.mtc_email.fillna('-', inplace=True)

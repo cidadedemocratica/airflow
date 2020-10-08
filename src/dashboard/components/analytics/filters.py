@@ -19,8 +19,8 @@ class FiltersComponent():
         self.utm_source_options = []
         self.utm_medium_options = []
         self.utm_campaign_options = []
-        self.start_date = None
-        self.end_date = None
+        self.end_date = self.service.get_default_end_date(),
+        self.start_date = self.service.get_default_start_date(),
         self.set_filters_options()
         self.set_filters_callbacks()
 
@@ -88,14 +88,13 @@ class FiltersComponent():
         )
 
     def set_filters_options(self):
-        self.end_date = self.service.get_default_end_date(),
-        self.start_date = self.service.get_default_start_date(),
-        self.utm_source_options = self.df['analytics_source'].value_counts(
-        ).keys()
-        self.utm_medium_options = self.df['analytics_medium'].value_counts(
-        ).keys()
-        self.utm_campaign_options = self.df['analytics_campaign'].value_counts(
-        ).keys()
+        if(not self.df.empty):
+            self.utm_source_options = self.df['analytics_source'].value_counts(
+            ).keys()
+            self.utm_medium_options = self.df['analytics_medium'].value_counts(
+            ).keys()
+            self.utm_campaign_options = self.df['analytics_campaign'].value_counts(
+            ).keys()
 
     def set_filters_callbacks(self):
         @self.app.callback(
@@ -114,23 +113,22 @@ class FiltersComponent():
                              end_date,
                              app_reload):
 
-            if(self.df.empty):
-                return
-
             self.start_date = start_date
             self.end_date = end_date
             self.reload_data_from_disk(app_reload)
-            self.set_aquisition_by_date()
-            self.set_aquisition_by_utm_source(campaign_source)
-            self.set_aquisition_by_utm_name(campaign_name)
-            self.set_aquisition_by_utm_medium(campaign_medium)
-            self.set_export_data()
+            if(not self.df.empty):
+                self.set_aquisition_by_date()
+                self.set_aquisition_by_utm_source(campaign_source)
+                self.set_aquisition_by_utm_name(campaign_name)
+                self.set_aquisition_by_utm_medium(campaign_medium)
+                self.set_export_data()
             return self.analytics_component.get_figure()
 
     def reload_data_from_disk(self, app_reload):
         if(app_reload != 0):
             self.service.load_data()
             self.df = self.service.df
+            self.analytics_component.df = self.service.df
 
     def set_aquisition_by_date(self):
         self.df = self.service.filter_dataframe_by_date(

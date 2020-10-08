@@ -17,7 +17,8 @@ class ExportsComponent():
         self.app = app
         self.df = df
         self.data_link_display = 'none'
-        self.add_callbacks()
+        if(not self.df.empty):
+            self.add_callbacks()
 
     def render(self):
         return html.Div(style={'marginTop': '10px'}, children=[

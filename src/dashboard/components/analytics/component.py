@@ -41,57 +41,35 @@ class AnalyticsComponent():
             Main entrypoint to create a Dash visualization.
             render will show a plotly figure and the figure's filters.
         """
-        if(not self.df.empty):
-            return html.Div(className="row", children=[
-                html.Div(className="col-12 mb-4", children=[
-                    html.Div(className="card shadow", children=[
-                        html.Div(className="card-header", children=[
-                            'Engajamento vs Aquisição (EJ)']),
-                        html.Div(className="card-body", children=[
-                            html.Div(style={"display": "flex", "width": "90%"}, children=[
-                                html.Div(style={"flexGrow": "1"}, children=[
-                                    self.filters_component.render(),
-                                    html.Hr(),
-                                    self.export_component.render(),
-                                ]),
-                                dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
-                                    html.Div(id="analytics_filters",
-                                             style={"flexGrow": 1, "width": "60%"}, children=[
-                                                 self.get_figure()
-                                             ])
-                                ])
-                            ])
-                        ])
-                    ])
-                ])
-            ])
         return html.Div(className="row", children=[
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
-                    html.Div(className="card-header", children=[
-                        'Engajamento vs Aquisição (EJ)']),
-                    html.Div(className="card-body", children=[
-                        html.Div(children=[
-                            html.Div(style={"flexGrow": "1"}, children=[
-                                self.filters_component.render(
-                                    self.df, self.service),
-                                self.export_component.render(),
-                            ]),
-                            html.Span("Não há dados para apresentar"),
-                            dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
-                                html.Div(id="analytics_filters",
-                                         children=[self.get_figure()])
-                            ])
-                        ])
-                    ])
-                ])
+                     html.Div(className="card-header", children=[
+                         'Engajamento vs Aquisição (EJ)']),
+                     html.Div(className="card-body", children=[
+                         html.Div(style={"display": "flex", "width": "90%"}, children=[
+                              html.Div(style={"flexGrow": "1"}, children=[
+                                  self.filters_component.render(),
+                                  html.Hr(),
+                                  self.export_component.render(),
+                              ]),
+                              dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
+                                  html.Div(id="analytics_filters",
+                                             style={"flexGrow": 1, "width": "60%"}, children=[
+                                                 self.get_figure()
+                                             ])
+                              ])
+                              ])
+                     ])
+                     ])
             ])
         ])
 
     def get_figure(self):
 
         if(self.df.empty):
-            return
+            return html.Div(children=[html.Span("Não há dados para apresentar")])
+
         fig = go.Figure(layout={'title': {'text': '', 'x': 0.5,
                                           'font': {'size': 16, 'color': '#ff3e72', 'family': 'Times New Roman'}},
                                 'xaxis': {'visible': False},

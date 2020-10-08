@@ -91,28 +91,29 @@ class FiltersComponent():
         )
 
     def set_filters_options(self):
-        self.utm_source_options = self.df['analytics_source'].value_counts(
-        ).keys()
-        self.utm_medium_options = self.df['analytics_medium'].value_counts(
-        ).keys()
-        self.utm_campaign_options = self.df['analytics_campaign'].value_counts(
-        ).keys()
+        if(not self.df.empty):
+            self.utm_source_options = self.df['analytics_source'].value_counts(
+            ).keys()
+            self.utm_medium_options = self.df['analytics_medium'].value_counts(
+            ).keys()
+            self.utm_campaign_options = self.df['analytics_campaign'].value_counts(
+            ).keys()
 
     def set_filters_callbacks(self):
-        if(not self.df.empty):
-            @self.app.callback(
-                Output("votes_loader", 'children'),
-                [Input('analytics_campaign_source', 'value'),
-                    Input('analytics_campaign_name', 'value'),
-                    Input('analytics_campaign_medium', 'value'),
-                    Input('email', 'value'),
-                    Input('votes_by_date', 'start_date'),
-                    Input('votes_by_date', 'end_date'),
-                    Input('app_reload', 'n_clicks'),
-                 ])
-            def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date, app_reload):
-                if(app_reload != 0):
-                    self.service.load_data()
+        @self.app.callback(
+            Output("votes_loader", 'children'),
+            [Input('analytics_campaign_source', 'value'),
+                Input('analytics_campaign_name', 'value'),
+                Input('analytics_campaign_medium', 'value'),
+                Input('email', 'value'),
+                Input('votes_by_date', 'start_date'),
+                Input('votes_by_date', 'end_date'),
+                Input('app_reload', 'n_clicks'),
+             ])
+        def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date, app_reload):
+            self.reload_data_from_disk(app_reload)
+
+            if(not self.df.empty):
                 self.df = self.service.filter_dataframe_by_date(
                     self.service.df,
                     start_date,
@@ -128,4 +129,10 @@ class FiltersComponent():
                 self.export_component.df = self.df
                 self.votes_component.df = self.df
 
-                return self.votes_component.get_figure()
+            return self.votes_component.get_figure()
+
+    def reload_data_from_disk(self, app_reload):
+        if(app_reload != 0):
+            self.service.load_data()
+            self.df = self.service.df
+            self.votes_component.df = self.service.df
