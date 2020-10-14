@@ -222,12 +222,15 @@ caption {
   position: sticky;
   top: 0;
   background-color: #e3e6f0;
+  padding: 3px;
 }
 
 .comments-table td {
   vertical-align: middle;
   border: 1px solid grey;
   text-align: center;
+  padding: 10px;
+  height: 140px;
 }
 
 label {
@@ -11236,7 +11239,6 @@ body.sidebar-toggled footer.sticky-footer {
 .clusters {
   display: flex;
   overflow-x: scroll;
-  max-width: 400px;
   height: 200px;
   align-items: center;
 }
@@ -11322,4 +11324,26 @@ padding-left: 25px;
     display: inline-block;
     color: magenta;
     visibility: visible;
+}
+
+.cluster-info {
+  position: relative;
+  display: inline-block;
+  padding-right: 2px;
+}
+
+.comments-infos {
+  bottom: 0;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: left;
+  padding-left: 10px;
+  padding-top: 25px;
+}
+.hover-comments-bar .tooltip-inner {
+  text-align: justify;
+  white-space: pre-line;
+  background-color: #e3e6f0;
+  color: grey;
+  font-weight: bold;
 }

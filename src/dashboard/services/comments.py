@@ -41,7 +41,8 @@ class CommentsService():
 
     def _create_geral_column(self):
         self.comments = pd.DataFrame(data=self.comments, columns=[
-            'comentário', 'concorda', 'discorda', 'pulados', 'participação', 'convergência'])
+            'comentário_id','comentário', 'autor', 'concorda', 'discorda', 'pulados', 
+            'participação', 'convergência'])
         self.comments['geral'] = ''
         for index, value in enumerate(self.comments['geral']):
             self.comments.loc[index,

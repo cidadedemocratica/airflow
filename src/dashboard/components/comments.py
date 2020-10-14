@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 
 from services.comments import CommentsService
 from components.utils.export import ExportsComponent
@@ -57,6 +58,8 @@ class CommentsComponent():
                                     html.Div(id="commments_filters",
                                              children=[self._get_table()])
                                 ]),
+                                html.Hr(),
+                                self.export_component.render(),
                             ])
                         ])
                     ])
@@ -83,16 +86,31 @@ class CommentsComponent():
     def _generate_table(self):
         ths = []
         for col in self.comments.columns:
-            if(col in ["comentário_id", "comentário", "autor", "convergência"]):
+            if(col in ["comentário", "convergência"]):
                 ths.append(html.Th(col))
-        ths.append(html.Th("clusters"))
+        clusters = [
+            html.Div("clusters", className='cluster-info'),
+            html.Div(className="fa fa-info-circle", id='clusters-hover'),                     
+            dbc.Tooltip(
+                'Barra Superior: Percentual de votantes que concordaram,'\
+                    'discordaram ou pularam o comentário.'\
+                    '\nBarra Inferior: Percentual de participação no'\
+                    'comentário considerando todos os participantes da '\
+                    'conversa ou do cluster',
+                target="clusters-hover",
+                placement="bottom",
+                className="hover-comments-bar"
+            )]
+        ths.append(html.Th(clusters))
         return html.Table(className="comments-table", children=[
-            html.Thead(
-                html.Tr(ths)
-            ),
-            html.Tbody(
-                self._generate_table_body(), id="table_body",
-            ),
+            html.Div(className='table-wrapper', children=[
+                html.Thead(
+                    html.Tr(ths)
+                ),
+                html.Tbody(
+                    self._generate_table_body(), id="table_body",
+                ),
+            ])
         ])
 
     def _generate_table_body(self, df=pd.DataFrame({})):
@@ -114,9 +132,14 @@ class CommentsComponent():
                     tds_clusters.append(geral_bar)
                 if(cluster_bars):
                     tds_clusters.append(cluster_bars)
-                elif(col in ["autor", "comentário"]):
+                elif(col == "comentário"):
                     tds.append(
-                        html.Td(children=[df.iloc[index][col]]))
+                        html.Td(children=[
+                            html.Div(children=[df.iloc[index][col]]),
+                            html.Div(className="comments-infos", children=["id: " + 
+                            str(df.iloc[index]['comentário_id']), html.Br(),
+                            "autor: " + str(df.iloc[index]['autor'])])
+                            ]))
             tds.append(html.Td(className='clusters', children=tds_clusters))
             trs.append(html.Tr(tds))
         return trs
@@ -154,9 +177,6 @@ class CommentsComponent():
 
     def _get_participation_bar(self, value):
         return html.Div(children=[
-            html.Div(className='clusters-name', children=[
-                html.Span("participação")
-            ]),
             html.Div(className='comment-bar', children=[
                 html.Div(style={
                     'backgroundColor': '#30bfd3', 'width': value, 'height': 20,
@@ -232,7 +252,5 @@ class CommentsComponent():
                         style={"flexGrow": 1}
                     ),
                 ]),
-                self.export_component.render(),
-                html.Div(className='table-wrapper',
-                         children=[self._generate_table()])
+                html.Div(children=[self._generate_table()])
             ])
