@@ -92,11 +92,11 @@ class CommentsComponent():
             html.Div("clusters", className='cluster-info'),
             html.Div(className="fa fa-info-circle", id='clusters-hover'),                     
             dbc.Tooltip(
-                'Barra Superior: Percentual de votantes que concordaram,'\
+                'Barra Superior: Percentual de votantes que concordaram, '\
                     'discordaram ou pularam o comentário.'\
                     '\nBarra Inferior: Percentual de participação no'\
                     'comentário considerando todos os participantes da '\
-                    'conversa ou do cluster',
+                    'conversa ou do cluster.',
                 target="clusters-hover",
                 placement="bottom",
                 className="hover-comments-bar"
