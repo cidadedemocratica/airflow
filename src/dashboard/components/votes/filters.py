@@ -1,6 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
+from components.votes.service import VotesService
 
 
 class FiltersComponent():
@@ -8,21 +9,32 @@ class FiltersComponent():
         FiltersComponent adds inputs to filter VotesComponent data.
     """
 
-    def __init__(self, service, app, votes_component, export_component):
-        self.service = service
-        self.app = app
+    def __init__(self, app, render_votes):
+        """
+            app: An instance of App class;
+            render_votes: A function to render the votes component visualization. This function
+            will be called when a filter is applied.
+        """
+
+        self.service = VotesService()
         self.df = self.service.df
-        self.votes_component = votes_component
-        self.export_component = export_component
+        self.render_votes = render_votes
+        self.app = app
         self.utm_source_options = []
         self.utm_medium_options = []
         self.utm_campaign_options = []
         self.set_filters_options()
         self.set_filters_callbacks()
 
+    def get_data_to_export(self):
+        """
+            Returns filtered data to be exported by ExportsComponent
+        """
+        return self.df
+
     def render(self):
         """
-            Main entrypoint to add filters to VotesComponent.
+            Adds filter inputs to VotesComponent.
         """
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
@@ -79,7 +91,6 @@ class FiltersComponent():
                               children="Período"),
                     dcc.DatePickerRange(
                         id='votes_by_date',
-                        clearable=True,
                         style={"flexGrow": 1},
                          end_date=self.service.get_default_end_date(),
                          start_date=self.service.get_default_start_date(),
@@ -126,13 +137,10 @@ class FiltersComponent():
                 self.df = self.service.filter_by_utm(
                     self.df, 'analytics_campaign', analytics_campaign_name)
                 self.df = self.service.filter_by_email(self.df, email)
-                self.export_component.df = self.df
-                self.votes_component.df = self.df
 
-            return self.votes_component.get_figure()
+            return self.render_votes(self.service.groupby(self.df))
 
     def reload_data_from_disk(self, app_reload):
         if(app_reload != 0):
             self.service.load_data()
             self.df = self.service.df
-            self.votes_component.df = self.service.df

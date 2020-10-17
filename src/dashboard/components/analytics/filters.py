@@ -3,6 +3,18 @@ import dash_core_components as dcc
 from components.utils.date_picker import *
 from dash.dependencies import Input, Output
 import pandas as pd
+from components.analytics.service import AnalyticsService
+
+
+class BubleData():
+
+    def __init__(self, ej_users, analytics_users):
+        self.ej_users = ej_users
+        self.analytics_users = analytics_users
+
+    def dataframe(self):
+        return pd.DataFrame(
+            [{'analytics_users': self.analytics_users, 'ej_users': self.ej_users}])
 
 
 class FiltersComponent():
@@ -10,23 +22,34 @@ class FiltersComponent():
         FiltersComponent adds inputs to filter AnalyticsComponent data.
     """
 
-    def __init__(self, service, app, analytics_component, export_component):
-        self.service = service
-        self.app = app
+    def __init__(self, app, render_analytics):
+        """
+            app: An instance of App class;
+            render_analytics: A function to render the analytics component visualization. This function
+            will be called when a filter is applied.
+        """
+        self.service = AnalyticsService()
         self.df = self.service.df
-        self.analytics_component = analytics_component
-        self.export_component = export_component
-        self.utm_source_options = []
-        self.utm_medium_options = []
-        self.utm_campaign_options = []
+        self.app = app
+        self.render_analytics = render_analytics
         self.end_date = self.service.get_default_end_date(),
         self.start_date = self.service.get_default_start_date(),
         self.set_filters_options()
         self.set_filters_callbacks()
 
+    def get_data_to_export(self):
+        """
+            Returns filtered data to be exported by ExportsComponent
+        """
+        data = [{'page_visits': self.bubble_data.analytics_users,
+                 'ej_participants': self.bubble_data.ej_users,
+                 'start_date': self.start_date,
+                 'end_date': self.end_date}]
+        return pd.DataFrame(data)
+
     def render(self):
         """
-            Main entrypoint to add filters to AnalyticsComponent.
+            Adds filter inputs to AnalyticsComponent.
         """
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
@@ -71,7 +94,6 @@ class FiltersComponent():
                               children="Período:"),
                     dcc.DatePickerRange(
                         id='by_date',
-                        clearable=True,
                         style={"flexGrow": 1},
                          end_date=self.end_date[0],
                          start_date=self.start_date[0]
@@ -88,6 +110,9 @@ class FiltersComponent():
         )
 
     def set_filters_options(self):
+        self.utm_source_options = []
+        self.utm_medium_options = []
+        self.utm_campaign_options = []
         if(not self.df.empty):
             self.utm_source_options = self.df['analytics_source'].value_counts(
             ).keys()
@@ -121,14 +146,12 @@ class FiltersComponent():
                 self.set_aquisition_by_utm_source(campaign_source)
                 self.set_aquisition_by_utm_name(campaign_name)
                 self.set_aquisition_by_utm_medium(campaign_medium)
-                self.set_export_data()
-            return self.analytics_component.get_figure()
+            return self.render_analytics(self.bubble_data)
 
     def reload_data_from_disk(self, app_reload):
         if(app_reload != 0):
             self.service.load_data()
             self.df = self.service.df
-            self.analytics_component.df = self.service.df
 
     def set_aquisition_by_date(self):
         self.df = self.service.filter_dataframe_by_date(
@@ -136,35 +159,34 @@ class FiltersComponent():
             self.start_date,
             self.end_date
         )
-        self.analytics_component.analytics_users_count = self.service.filter_analytics_users_by_date(
+        analytics_users = self.service.filter_analytics_users_by_date(
             self.df, self.start_date, self.end_date)
-        self.analytics_component.ej_users_count = len(
-            self.df.email.value_counts())
+        ej_users = len(self.df.email.value_counts())
+        self.bubble_data = BubleData(ej_users, analytics_users).dataframe()
 
     def set_aquisition_by_utm_source(self, campaign_source):
         if(campaign_source and len(campaign_source) >= 3):
-            self.analytics_component.analytics_users_count = self.service.filter_analytics_users_by_utm_source(
+            analytics_users = self.service.filter_analytics_users_by_utm_source(
                 self.df, campaign_source, self.start_date, self.end_date)
-            self.analytics_component.ej_users_count = len(
+            ej_users = len(
                 self.df[self.df.analytics_source == campaign_source].email.value_counts())
+            self.bubble_data = BubleData(
+                ej_users, analytics_users).dataframe()
 
     def set_aquisition_by_utm_name(self, campaign_name):
         if(campaign_name and len(campaign_name) >= 3):
-            self.analytics_component.analytics_users_count = self.service.filter_analytics_users_by_utm_name(
+            analytics_users = self.service.filter_analytics_users_by_utm_name(
                 self.df, campaign_name, self.start_date, self.end_date)
-            self.analytics_component.ej_users_count = len(
+            ej_users = len(
                 self.df[self.df.analytics_name == campaign_name].email.value_counts())
+            self.bubble_data = BubleData(
+                ej_users, analytics_users).dataframe()
 
     def set_aquisition_by_utm_medium(self, campaign_medium):
         if(campaign_medium and len(campaign_medium) >= 3):
-            self.analytics_component.analytics_users_count = self.service.filter_analytics_users_by_utm_medium(
+            analytics_users = self.service.filter_analytics_users_by_utm_medium(
                 self.df, campaign_medium, self.start_date, self.end_date)
-            self.analytics_component.ej_users_count = len(
+            ej_users = len(
                 self.df[self.df.analytics_medium == campaign_medium].email.value_counts())
-
-    def set_export_data(self):
-        data = [{'page_visits': self.analytics_component.analytics_users_count,
-                 'ej_participants': self.analytics_component.ej_users_count,
-                 'start_date': self.start_date,
-                 'end_date': self.end_date}]
-        self.export_component.df = pd.DataFrame(data)
+            self.bubble_data = BubleData(
+                ej_users, analytics_users).dataframe()

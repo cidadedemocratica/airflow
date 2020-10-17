@@ -23,18 +23,14 @@ class AnalyticsComponent():
     """
 
     def __init__(self, app):
-        self.app = app
-        self.service = AnalyticsService()
-        self.df = self.service.df
-        self.prepare()
+        self.prepare(app)
 
-    def prepare(self):
+    def prepare(self, app):
+        self.app = app
         self.ej_users_count = 1
         self.analytics_users_count = 1
-        self.export_component = ExportsComponent(
-            "analytics", self.app, self.df)
-        self.filters_component = FiltersComponent(
-            self.service, self.app, self, self.export_component)
+        self.export_component = ExportsComponent("analytics", self)
+        self.filters_component = FiltersComponent(self.app, self.get_figure)
 
     def render(self):
         """
@@ -65,9 +61,9 @@ class AnalyticsComponent():
             ])
         ])
 
-    def get_figure(self):
+    def get_figure(self, df=pd.DataFrame({})):
 
-        if(self.df.empty):
+        if(df.empty):
             return html.Div(children=[html.Span("Não há dados para apresentar")])
 
         fig = go.Figure(layout={'title': {'text': '', 'x': 0.5,
@@ -83,7 +79,7 @@ class AnalyticsComponent():
             {
                 'x': '-50',
                 'y': '50',
-                'text': f'<b>{self.aquisition_percentage()}%</b>',
+                'text': f'<b>{self.aquisition_percentage(df)}%</b>',
                 'font': {'color': '#fff', 'size': 15},
                 'align': 'center',
                 'showarrow': False
@@ -92,7 +88,7 @@ class AnalyticsComponent():
                 'x': '-50',
                 'y': '50',
                 'yshift': 90,
-                'text': f'<b>{self.analytics_users_count} visitantes</b>',
+                'text': f'<b>{df.loc[0].analytics_users} visitantes</b>',
                 'font': {'color': '#fff', 'size': 15},
                 'showarrow': False
             }
@@ -113,7 +109,7 @@ class AnalyticsComponent():
             x=[-50], y=[50],
             mode='markers',
             marker=dict(
-                size=[self.engagement_buble_size()],
+                size=[self.engagement_buble_size(df)],
                 color='#C4F2F4',
                 sizeref=1.1,
                 maxdisplayed=1),
@@ -129,12 +125,16 @@ class AnalyticsComponent():
             dcc.Graph(figure=fig)
         ])
 
-    def aquisition_percentage(self):
-        if(self.analytics_users_count == 0):
+    def aquisition_percentage(self, df):
+        analytics_users = df.loc[0].analytics_users
+        ej_users = df.loc[0].ej_users
+        if(analytics_users == 0):
             return 0.0
-        return round((self.ej_users_count/self.analytics_users_count) * 100, 2)
+        return round((ej_users/analytics_users) * 100, 2)
 
-    def engagement_buble_size(self):
-        if(self.analytics_users_count == 0):
-            return (300 / 1) * self.ej_users_count
-        return (300 / self.analytics_users_count) * self.ej_users_count
+    def engagement_buble_size(self, df):
+        analytics_users = df.loc[0].analytics_users
+        ej_users = df.loc[0].ej_users
+        if(analytics_users == 0):
+            return (300 / 1) * ej_users
+        return (300 / analytics_users) * ej_users

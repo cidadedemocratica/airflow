@@ -12,10 +12,13 @@ from dash.dependencies import Input, Output
 
 class ExportsComponent():
 
-    def __init__(self, id_prefix, app, df):
+    def __init__(self, id_prefix, app, filters_component=None):
         self.id_prefix = id_prefix
         self.app = app
-        self.df = df
+        if(filters_component):
+            self.df = filters_component.get_data_to_export()
+        else:
+            self.df = pd.DataFrame({})
         self.data_link_display = 'none'
         if(not self.df.empty):
             self.add_callbacks()

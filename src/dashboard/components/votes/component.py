@@ -9,7 +9,6 @@ from dateutil.parser import *
 from dateutil.tz import *
 import datetime
 from datetime import date
-from components.votes.service import VotesService
 from components.utils.export import ExportsComponent
 from components.votes.filters import FiltersComponent
 from components.utils.date_picker import *
@@ -22,19 +21,18 @@ class VotesComponent():
     """
 
     def __init__(self, app):
-        self.app = app
-        self.service = VotesService()
-        self.df = self.service.df
-        self.export_component = ExportsComponent(
-            "votes", self.app, self.df)
-        self.filters_component = FiltersComponent(
-            self.service, app, self, self.export_component)
+        self.prepare(app)
 
-    def get_figure(self):
-        if(self.df.empty):
+    def prepare(self, app):
+        self.app = app
+        self.filters_component = FiltersComponent(app, self.get_figure)
+        self.export_component = ExportsComponent(
+            "votes", app, self.filters_component)
+
+    def get_figure(self, df):
+        if(df.empty):
             return html.Div(children=[html.Span("Não há dados para apresentar")])
 
-        df = self.service.groupby(self.df)
         fig = go.Figure(
             data=go.Box(name='Distribuição dos votos',
                         y=df['criado'], boxpoints='all',
@@ -66,7 +64,7 @@ class VotesComponent():
                             dcc.Loading(id="votes_loader", type="default", color="#30bfd3", children=[
                                 html.Div(id="votes_filters",
                                          style={"flexGrow": 1, "width": "60%"}, children=[
-                                             self.get_figure()
+                                             self.get_figure(pd.DataFrame({}))
                                          ])
                             ])
                         ])

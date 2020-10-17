@@ -19,8 +19,7 @@ class CommentsComponent():
         self.comments = self.service.comments
         self.order_options = ['concorda',
                               'discorda', 'pulados', 'convergência']
-        self.export_component = ExportsComponent(
-            "comments", app, self.comments)
+        self.export_component = ExportsComponent("comments", self)
         self.add_callbacks()
 
     def add_callbacks(self):
@@ -90,13 +89,13 @@ class CommentsComponent():
                 ths.append(html.Th(col))
         clusters = [
             html.Div("clusters", className='cluster-info'),
-            html.Div(className="fa fa-info-circle", id='clusters-hover'),                     
+            html.Div(className="fa fa-info-circle", id='clusters-hover'),
             dbc.Tooltip(
-                'Barra Superior: Percentual de votantes que concordaram, '\
-                    'discordaram ou pularam o comentário.'\
-                    '\nBarra Inferior: Percentual de participação no'\
-                    'comentário considerando todos os participantes da '\
-                    'conversa ou do cluster.',
+                'Barra Superior: Percentual de votantes que concordaram, '
+                'discordaram ou pularam o comentário.'
+                '\nBarra Inferior: Percentual de participação no'
+                'comentário considerando todos os participantes da '
+                'conversa ou do cluster.',
                 target="clusters-hover",
                 placement="bottom",
                 className="hover-comments-bar"
@@ -136,10 +135,11 @@ class CommentsComponent():
                     tds.append(
                         html.Td(children=[
                             html.Div(children=[df.iloc[index][col]]),
-                            html.Div(className="comments-infos", children=["id: " + 
-                            str(df.iloc[index]['comentário_id']), html.Br(),
-                            "autor: " + str(df.iloc[index]['autor'])])
-                            ]))
+                            html.Div(className="comments-infos", children=["id: " +
+                                                                           str(df.iloc[index]['comentário_id']), html.Br(
+                                                                           ),
+                                                                           "autor: " + str(df.iloc[index]['autor'])])
+                        ]))
             tds.append(html.Td(className='clusters', children=tds_clusters))
             trs.append(html.Tr(tds))
         return trs
