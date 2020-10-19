@@ -20,6 +20,7 @@ class CommentsComponent():
         self.order_options = ['concorda',
                               'discorda', 'pulados', 'convergência']
         self.export_component = ExportsComponent("comments", self)
+        self.conversation_url = "https://www.ejplatform.org/conversations/56/ucc-conversa-1/"
         self.add_callbacks()
 
     def add_callbacks(self):
@@ -49,7 +50,16 @@ class CommentsComponent():
                 html.Div(className="col-12 mb-4", children=[
                     html.Div(className="card shadow", children=[
                         html.Div(className="card-header", children=[
-                            'Votos e participação em todos os comentários.'
+                            html.Div(children=[
+                                html.Span('Votos e participação em todos os comentários.', style={
+                                    "marginRight": 4}),
+                                html.I(className="fa fa-info-circle",
+                                       id='comments-component-title')
+                            ]),
+                            dbc.Tooltip(
+                                'Visualização que permite correlacionar como cada comentário performou no geral e nos clusters.',
+                                target='comments-component-title')
+
                         ]),
                         html.Div(className="card-body", children=[
                             html.Div(children=[
@@ -228,13 +238,17 @@ class CommentsComponent():
     def _get_table(self):
         return html.Div(
             children=[
-                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="ID da Conversa: 56"),
+                html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
+                    html.Span(className="filter-title",
+                              children=[html.Span("Conversa: "),
+                                        html.A(self.conversation_url,
+                                               href=self.conversation_url,
+                                               target="_blank")
+                                        ]),
                 ]),
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center', 'width': '30%'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="Participação acima de:"),
+                    html.Span(className="filter-title",
+                              children="Taxa de participação:"),
                     dcc.Input(
                         id='participation',
                         type='number',
@@ -242,7 +256,7 @@ class CommentsComponent():
                         style={"flexGrow": 1, 'color': '#aaa', 'padding': '6px', 'opacity': '60%'}),
                 ]),
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '18px', 'alignItems': 'center', 'width': '30%'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                    html.Span(className="filter-title",
                               children="Ordenar por:"),
                     dcc.Dropdown(
                         id='_filter',

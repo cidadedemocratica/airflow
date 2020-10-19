@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 
 from dateutil.parser import *
 from dateutil.tz import *
@@ -53,7 +54,17 @@ class VotesComponent():
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                     html.Div(className="card-header", children=[
-                        'Aquisição Qualificada']),
+                        html.Div(children=[
+                            html.Span("Aquisição qualificada", style={
+                                "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='analytics-component-title')
+                        ]),
+                        dbc.Tooltip(
+                            'Visualização que permite encontrar a quantidade de pontos de informação (votos) coletados por usuários. '
+                            'Os votos são agrupados por email, o que permite o calculo de métricas como média e mediana',
+                            target='analytics-component-title')
+                    ]),
                     html.Div(className="card-body", children=[
                         html.Div(style={"display": "flex", "width": "90%"}, children=[
                             html.Div(style={"flexGrow": "1"}, children=[

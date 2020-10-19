@@ -10,6 +10,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 
 from components.utils.export import ExportsComponent
 from components.analytics.service import AnalyticsService
@@ -41,21 +42,32 @@ class AnalyticsComponent():
             html.Div(className="col-12 mb-4", children=[
                 html.Div(className="card shadow", children=[
                      html.Div(className="card-header", children=[
-                         'Engajamento vs Aquisição (EJ)']),
+                        html.Div(children=[
+                            html.Span("Engajamento vs Aquisição", style={
+                                "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='votes-component-title')
+                        ]),
+                        dbc.Tooltip(
+                            'Visualização que permite correlacionar a quantidade de acessos à pagina de coleta '
+                            'em relação à porcentagem de participantes na conversa. Representa quão eficiente '
+                            'é a EJ no processo de potencializar a aquisição de novos usuários.',
+                            target='votes-component-title')
+                        ]),
                      html.Div(className="card-body", children=[
                          html.Div(style={"display": "flex", "width": "90%"}, children=[
-                              html.Div(style={"flexGrow": "1"}, children=[
-                                  self.filters_component.render(),
-                                  html.Hr(),
-                                  self.export_component.render(),
-                              ]),
-                              dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
-                                  html.Div(id="analytics_filters",
-                                             style={"flexGrow": 1, "width": "60%"}, children=[
-                                                 self.get_figure()
-                                             ])
-                              ])
-                              ])
+                             html.Div(style={"flexGrow": "1"}, children=[
+                                 self.filters_component.render(),
+                                 html.Hr(),
+                                 self.export_component.render(),
+                             ]),
+                             dcc.Loading(id="analytics_loader", type="default", color="#30bfd3", children=[
+                                 html.Div(id="analytics_filters",
+                                          style={"flexGrow": 1, "width": "60%"}, children=[
+                                             self.get_figure()
+                                          ])
+                             ])
+                         ])
                      ])
                      ])
             ])

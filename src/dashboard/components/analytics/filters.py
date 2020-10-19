@@ -55,20 +55,20 @@ class FiltersComponent():
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Div(style={"marginRight": 8},
+                    html.Div(className="filter-title",
                              children=[
-                        html.Div(children=[
-                            html.Span("Origem do participante", style={
-                                      "marginRight": 4}),
-                            html.I(className="fa fa-info-circle",
-                                   id='analytics-utm-source')
-                        ]),
-                        dbc.Tooltip(
-                            'Será o valor utm_source (google analytics). Quando definido, será o valor da tag, '
-                            'quando não, será o domínio que o usuário estava antes de ser redirecionado para '
-                            'o componente de votação. Se ele for direto para o componente, o valor será '
-                            '(direct).', target='analytics-utm-source')
-                    ]),
+                                 html.Div(children=[
+                                     html.Span("Origem do participante", style={
+                                         "marginRight": 4}),
+                                     html.I(className="fa fa-info-circle",
+                                            id='analytics-utm-source')
+                                 ]),
+                                 dbc.Tooltip(
+                                     'Será o valor utm_source (google analytics). Quando definido, será o valor da tag, '
+                                     'quando não, será o domínio que o usuário estava antes de ser redirecionado para '
+                                     'o componente de votação. Se ele for direto para o componente, o valor será '
+                                     '(direct).', target='analytics-utm-source')
+                             ]),
                     dcc.Dropdown(
                         id='analytics_campaign_source',
                         options=[{'label': i, 'value': i}
@@ -79,19 +79,19 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Div(style={"marginRight": 8},
+                    html.Div(className="filter-title",
                              children=[
-                        html.Div(children=[
-                            html.Span("Midia do participante", style={
-                                      "marginRight": 4}),
-                            html.I(className="fa fa-info-circle",
-                                   id='analytics-utm-medium')
-                        ]),
-                        dbc.Tooltip('Será o valor utm_medium(google analytics). Quando definido, será o valor da tag,'
-                                    ' quando não, será a engine de busca utilizada pelo usuário. '
-                                    'Caso o usuário venha diretamente para a pagina, o valor será (none).',
-                                    target='analytics-utm-medium')
-                    ]),
+                                 html.Div(children=[
+                                     html.Span("Midia do participante", style={
+                                         "marginRight": 4}),
+                                     html.I(className="fa fa-info-circle",
+                                            id='analytics-utm-medium')
+                                 ]),
+                                 dbc.Tooltip('Será o valor utm_medium(google analytics). Quando definido, será o valor da tag,'
+                                             ' quando não, será a engine de busca utilizada pelo usuário. '
+                                             'Caso o usuário venha diretamente para a pagina, o valor será (none).',
+                                             target='analytics-utm-medium')
+                             ]),
                     dcc.Dropdown(
                         id='analytics_campaign_medium',
                         options=[{'label': i, 'value': i}
@@ -102,18 +102,18 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Div(style={"marginRight": 8},
+                    html.Div(className="filter-title",
                              children=[
-                        html.Div(children=[
-                            html.Span("Campanha do participante",
-                                      style={"marginRight": 4}),
-                            html.I(className="fa fa-info-circle",
-                                   id='analytics-utm-campaign')
-                        ]),
-                        dbc.Tooltip(
-                            'Será o valor do utm_campaign (google analytics).'
-                            'Caso não seja definido, seu valor será (not set).', target='analytics-utm-campaign')
-                    ]),
+                                 html.Div(children=[
+                                     html.Span("Campanha do participante",
+                                               style={"marginRight": 4}),
+                                     html.I(className="fa fa-info-circle",
+                                            id='analytics-utm-campaign')
+                                 ]),
+                                 dbc.Tooltip(
+                                     'Será o valor do utm_campaign (google analytics).'
+                                     'Caso não seja definido, seu valor será (not set).', target='analytics-utm-campaign')
+                             ]),
                     dcc.Dropdown(
                         id='analytics_campaign_name',
                         options=[{'label': i, 'value': i}
@@ -124,7 +124,7 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8},
+                    html.Span(className="filter-title",
                               children="Período:"),
                     dcc.DatePickerRange(
                         id='by_date',
@@ -136,10 +136,10 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8},
+                    html.Span(className="filter-title",
                               children=f"Paginas analisadas:"),
-                    html.Span(style={"marginRight": 8, 'fontWeight': 'bold'},
-                              children=f"{(self.service.page_path).replace('ga:pagePath=@', ' ')}"),
+                    html.Span(
+                        children=f"{(self.service.page_path).replace('ga:pagePath=@', ' ')}"),
                 ])
                 ]),
             ])

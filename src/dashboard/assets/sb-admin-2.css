@@ -230,7 +230,7 @@ caption {
   border: 1px solid grey;
   text-align: center;
   padding: 10px;
-  height: 140px;
+  height: 150px;
 }
 
 label {
@@ -11239,7 +11239,7 @@ body.sidebar-toggled footer.sticky-footer {
 .clusters {
   display: flex;
   overflow-x: scroll;
-  height: 200px;
+  overflow-y: hidden;
   align-items: center;
 }
 
@@ -11346,4 +11346,9 @@ padding-left: 25px;
   background-color: #e3e6f0;
   color: grey;
   font-weight: bold;
+}
+
+.filter-title {
+	margin-right: 8px;
+	font-weight: 500;
 }
