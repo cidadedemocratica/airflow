@@ -126,9 +126,10 @@ class FiltersComponent():
                     dcc.DatePickerRange(
                         id='votes_by_date',
                         style={"flexGrow": 1},
-                         end_date=self.service.get_default_end_date(),
-                         start_date=self.service.get_default_start_date(),
-                         ),
+                        display_format='DD/MM/YYYY',
+                        end_date=self.service.get_default_end_date(),
+                        start_date=self.service.get_default_start_date(),
+                    ),
                 ])
                 ]),
             ]),

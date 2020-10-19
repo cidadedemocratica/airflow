@@ -124,19 +124,22 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                    html.Span(style={"marginRight": 8},
                               children="Período:"),
                     dcc.DatePickerRange(
                         id='by_date',
                         style={"flexGrow": 1},
-                         end_date=self.end_date[0],
-                         start_date=self.start_date[0]
-                         ),
+                        display_format='DD/MM/YYYY',
+                        end_date=self.end_date[0],
+                        start_date=self.start_date[0]
+                    ),
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children=f"Paginas analisadas: {(self.service.page_path).replace('ga:pagePath=@', ' ')}"),
+                    html.Span(style={"marginRight": 8},
+                              children=f"Paginas analisadas:"),
+                    html.Span(style={"marginRight": 8, 'fontWeight': 'bold'},
+                              children=f"{(self.service.page_path).replace('ga:pagePath=@', ' ')}"),
                 ])
                 ]),
             ])
@@ -191,7 +194,7 @@ class FiltersComponent():
 
     def set_aquisition_by_date(self):
         self.df = self.service.filter_dataframe_by_date(
-            self.df,
+            self.service.df,
             self.start_date,
             self.end_date
         )
