@@ -4,6 +4,7 @@ from components.utils.date_picker import *
 from dash.dependencies import Input, Output
 import pandas as pd
 from components.analytics.service import AnalyticsService
+import dash_bootstrap_components as dbc
 
 
 class BubleData():
@@ -54,10 +55,22 @@ class FiltersComponent():
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_source:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Origem do participante", style={
+                                      "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='analytics-utm-source')
+                        ]),
+                        dbc.Tooltip(
+                            'Será o valor utm_source (google analytics). Quando definido, será o valor da tag, '
+                            'quando não, será o domínio que o usuário estava antes de ser redirecionado para '
+                            'o componente de votação. Se ele for direto para o componente, o valor será '
+                            '(direct).', target='analytics-utm-source')
+                    ]),
                     dcc.Dropdown(
-                        id='campaign_source',
+                        id='analytics_campaign_source',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_source_options],
                         value='',
@@ -66,10 +79,21 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_medium:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Midia do participante", style={
+                                      "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='analytics-utm-medium')
+                        ]),
+                        dbc.Tooltip('Será o valor utm_medium(google analytics). Quando definido, será o valor da tag,'
+                                    ' quando não, será a engine de busca utilizada pelo usuário. '
+                                    'Caso o usuário venha diretamente para a pagina, o valor será (none).',
+                                    target='analytics-utm-medium')
+                    ]),
                     dcc.Dropdown(
-                        id='campaign_medium',
+                        id='analytics_campaign_medium',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_medium_options],
                         value='',
@@ -78,10 +102,20 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_campaign:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Campanha do participante",
+                                      style={"marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='analytics-utm-campaign')
+                        ]),
+                        dbc.Tooltip(
+                            'Será o valor do utm_campaign (google analytics).'
+                            'Caso não seja definido, seu valor será (not set).', target='analytics-utm-campaign')
+                    ]),
                     dcc.Dropdown(
-                        id='campaign_name',
+                        id='analytics_campaign_name',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_campaign_options],
                         value='',
@@ -124,16 +158,16 @@ class FiltersComponent():
     def set_filters_callbacks(self):
         @self.app.callback(
             Output("analytics_loader", 'children'),
-            [Input('campaign_source', 'value'),
-                Input('campaign_name', 'value'),
-                Input('campaign_medium', 'value'),
+            [Input('analytics_campaign_source', 'value'),
+                Input('analytics_campaign_name', 'value'),
+                Input('analytics_campaign_medium', 'value'),
                 Input('by_date', 'start_date'),
                 Input('by_date', 'end_date'),
                 Input('app_reload', 'n_clicks'),
              ])
-        def filter_callbacks(campaign_source,
-                             campaign_name,
-                             campaign_medium,
+        def filter_callbacks(analytics_campaign_source,
+                             analytics_campaign_name,
+                             analytics_campaign_medium,
                              start_date,
                              end_date,
                              app_reload):
@@ -143,9 +177,11 @@ class FiltersComponent():
             self.reload_data_from_disk(app_reload)
             if(not self.df.empty):
                 self.set_aquisition_by_date()
-                self.set_aquisition_by_utm_source(campaign_source)
-                self.set_aquisition_by_utm_name(campaign_name)
-                self.set_aquisition_by_utm_medium(campaign_medium)
+                self.set_aquisition_by_utm_source(
+                    analytics_campaign_source)
+                self.set_aquisition_by_utm_name(analytics_campaign_name)
+                self.set_aquisition_by_utm_medium(
+                    analytics_campaign_medium)
             return self.render_analytics(self.bubble_data)
 
     def reload_data_from_disk(self, app_reload):
@@ -164,29 +200,29 @@ class FiltersComponent():
         ej_users = len(self.df.email.value_counts())
         self.bubble_data = BubleData(ej_users, analytics_users).dataframe()
 
-    def set_aquisition_by_utm_source(self, campaign_source):
-        if(campaign_source and len(campaign_source) >= 3):
+    def set_aquisition_by_utm_source(self, analytics_campaign_source):
+        if(analytics_campaign_source and len(analytics_campaign_source) >= 3):
             analytics_users = self.service.filter_analytics_users_by_utm_source(
-                self.df, campaign_source, self.start_date, self.end_date)
+                self.df, analytics_campaign_source, self.start_date, self.end_date)
             ej_users = len(
-                self.df[self.df.analytics_source == campaign_source].email.value_counts())
+                self.df[self.df.analytics_source == analytics_campaign_source].email.value_counts())
             self.bubble_data = BubleData(
                 ej_users, analytics_users).dataframe()
 
-    def set_aquisition_by_utm_name(self, campaign_name):
-        if(campaign_name and len(campaign_name) >= 3):
+    def set_aquisition_by_utm_name(self, analytics_campaign_name):
+        if(analytics_campaign_name and len(analytics_campaign_name) >= 3):
             analytics_users = self.service.filter_analytics_users_by_utm_name(
-                self.df, campaign_name, self.start_date, self.end_date)
+                self.df, analytics_campaign_name, self.start_date, self.end_date)
             ej_users = len(
-                self.df[self.df.analytics_name == campaign_name].email.value_counts())
+                self.df[self.df.analytics_name == analytics_campaign_name].email.value_counts())
             self.bubble_data = BubleData(
                 ej_users, analytics_users).dataframe()
 
-    def set_aquisition_by_utm_medium(self, campaign_medium):
-        if(campaign_medium and len(campaign_medium) >= 3):
+    def set_aquisition_by_utm_medium(self, analytics_campaign_medium):
+        if(analytics_campaign_medium and len(analytics_campaign_medium) >= 3):
             analytics_users = self.service.filter_analytics_users_by_utm_medium(
-                self.df, campaign_medium, self.start_date, self.end_date)
+                self.df, analytics_campaign_medium, self.start_date, self.end_date)
             ej_users = len(
-                self.df[self.df.analytics_medium == campaign_medium].email.value_counts())
+                self.df[self.df.analytics_medium == analytics_campaign_medium].email.value_counts())
             self.bubble_data = BubleData(
                 ej_users, analytics_users).dataframe()

@@ -55,7 +55,7 @@ class FiltersComponent():
                             '(direct).', target='utm-source')
                     ]),
                     dcc.Dropdown(
-                        id='analytics_campaign_source',
+                        id='votes_campaign_source',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_source_options],
                         value='',
@@ -78,7 +78,7 @@ class FiltersComponent():
                                     target='utm-medium')
                     ]),
                     dcc.Dropdown(
-                        id='analytics_campaign_medium',
+                        id='votes_campaign_medium',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_medium_options],
                         value='',
@@ -100,7 +100,7 @@ class FiltersComponent():
                             'Caso não seja definido, seu valor será (not set).', target='utm-campaign')
                     ]),
                     dcc.Dropdown(
-                        id='analytics_campaign_name',
+                        id='votes_campaign_name',
                         options=[{'label': i, 'value': i}
                                  for i in self.utm_campaign_options],
                         value='',
@@ -147,15 +147,15 @@ class FiltersComponent():
     def set_filters_callbacks(self):
         @ self.app.callback(
             Output("votes_loader", 'children'),
-            [Input('analytics_campaign_source', 'value'),
-                Input('analytics_campaign_name', 'value'),
-                Input('analytics_campaign_medium', 'value'),
+            [Input('votes_campaign_source', 'value'),
+                Input('votes_campaign_name', 'value'),
+                Input('votes_campaign_medium', 'value'),
                 Input('email', 'value'),
                 Input('votes_by_date', 'start_date'),
                 Input('votes_by_date', 'end_date'),
                 Input('app_reload', 'n_clicks'),
              ])
-        def distribution_callback(analytics_campaign_source, analytics_campaign_name, analytics_campaign_medium, email, start_date, end_date, app_reload):
+        def distribution_callback(votes_campaign_source, votes_campaign_name, votes_campaign_medium, email, start_date, end_date, app_reload):
             self.reload_data_from_disk(app_reload)
 
             if(not self.df.empty):
@@ -165,11 +165,11 @@ class FiltersComponent():
                     end_date
                 )
                 self.df = self.service.filter_by_utm(
-                    self.df, 'analytics_source', analytics_campaign_source)
+                    self.df, 'analytics_source', votes_campaign_source)
                 self.df = self.service.filter_by_utm(
-                    self.df, 'analytics_medium', analytics_campaign_medium)
+                    self.df, 'analytics_medium', votes_campaign_medium)
                 self.df = self.service.filter_by_utm(
-                    self.df, 'analytics_campaign', analytics_campaign_name)
+                    self.df, 'analytics_campaign', votes_campaign_name)
                 self.df = self.service.filter_by_email(self.df, email)
 
             return self.render_votes(self.service.groupby(self.df))
