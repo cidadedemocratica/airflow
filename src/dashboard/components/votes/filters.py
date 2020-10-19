@@ -2,6 +2,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 from components.votes.service import VotesService
+import dash_bootstrap_components as dbc
 
 
 class FiltersComponent():
@@ -39,8 +40,20 @@ class FiltersComponent():
         return html.Div(children=[
             html.Div(style={'width': '95%', 'margin': 'auto', 'marginTop': '20px'}, children=[
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_source:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Origem do voto", style={
+                                      "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='utm-source')
+                        ]),
+                        dbc.Tooltip(
+                            'Será o valor utm_source (google analytics). Quando definido, será o valor da tag, '
+                            'quando não, será o domínio que o usuário estava antes de ser redirecionado para '
+                            'o componente de votação. Se ele for direto para o componente, o valor será '
+                            '(direct).', target='utm-source')
+                    ]),
                     dcc.Dropdown(
                         id='analytics_campaign_source',
                         options=[{'label': i, 'value': i}
@@ -51,8 +64,19 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_medium:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Midia do voto", style={
+                                      "marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='utm-medium')
+                        ]),
+                        dbc.Tooltip('Será o valor utm_medium(google analytics). Quando definido, será o valor da tag,'
+                                    ' quando não, será a engine de busca utilizada pelo usuário. '
+                                    'Caso o usuário venha diretamente para a pagina, o valor será (none).',
+                                    target='utm-medium')
+                    ]),
                     dcc.Dropdown(
                         id='analytics_campaign_medium',
                         options=[{'label': i, 'value': i}
@@ -63,8 +87,18 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="utm_campaign:"),
+                    html.Div(style={"marginRight": 8},
+                             children=[
+                        html.Div(children=[
+                            html.Span("Campanha do voto",
+                                      style={"marginRight": 4}),
+                            html.I(className="fa fa-info-circle",
+                                   id='utm-campaign')
+                        ]),
+                        dbc.Tooltip(
+                            'Será o valor do utm_campaign (google analytics).'
+                            'Caso não seja definido, seu valor será (not set).', target='utm-campaign')
+                    ]),
                     dcc.Dropdown(
                         id='analytics_campaign_name',
                         options=[{'label': i, 'value': i}
@@ -75,8 +109,8 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px', 'alignItems': 'center'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
-                              children="visualizar apenas emails válidos"),
+                    html.Span(style={"marginRight": 8},
+                              children="Visualizar apenas emails válidos"),
                     dcc.Checklist(
                         id='email',
                         options=[
@@ -87,7 +121,7 @@ class FiltersComponent():
                 ])
                 ]),
                 html.Div(children=[html.Div(style={'display': 'flex', 'marginTop': '10px'}, children=[
-                    html.Span(style={"marginRight": 8, "fontWeight": "bold"},
+                    html.Span(style={"marginRight": 8},
                               children="Período"),
                     dcc.DatePickerRange(
                         id='votes_by_date',
@@ -111,7 +145,7 @@ class FiltersComponent():
             ).keys()
 
     def set_filters_callbacks(self):
-        @self.app.callback(
+        @ self.app.callback(
             Output("votes_loader", 'children'),
             [Input('analytics_campaign_source', 'value'),
                 Input('analytics_campaign_name', 'value'),
