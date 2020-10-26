@@ -253,6 +253,7 @@ class CommentsComponent():
                         id='participation',
                         type='number',
                         value='50',
+                        debounce=True,
                         style={"flexGrow": 1, 'color': '#aaa', 'padding': '6px', 'opacity': '60%'}),
                 ]),
                 html.Div(style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '18px', 'alignItems': 'center', 'width': '30%'}, children=[
