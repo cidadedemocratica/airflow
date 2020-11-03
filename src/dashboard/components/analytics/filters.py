@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 
 class BubleData():
 
-    def __init__(self, ej_users, analytics_users):
+    def __init__(self, ej_users=0, analytics_users=0):
         self.ej_users = ej_users
         self.analytics_users = analytics_users
 
@@ -35,6 +35,7 @@ class FiltersComponent():
         self.render_analytics = render_analytics
         self.end_date = self.service.get_default_end_date(),
         self.start_date = self.service.get_default_start_date(),
+        self.bubble_data = BubleData().dataframe()
         self.set_filters_options()
         self.set_filters_callbacks()
 
@@ -198,8 +199,7 @@ class FiltersComponent():
             self.start_date,
             self.end_date
         )
-        analytics_users = self.service.filter_analytics_users_by_date(
-            self.df, self.start_date, self.end_date)
+        analytics_users = self.service.filter_analytics_users_by_date(self.start_date, self.end_date)
         ej_users = len(self.df.email.value_counts())
         self.bubble_data = BubleData(ej_users, analytics_users).dataframe()
 
