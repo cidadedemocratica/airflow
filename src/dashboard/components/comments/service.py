@@ -33,11 +33,6 @@ class CommentsService():
             print(traceback.format_exc())
             pass
 
-    def get_clusters_names(self):
-        clusters_names = self.clusters.cluster_name.value_counts().keys()
-        clusters_names = clusters_names.map(
-            lambda cluster_name: f"{cluster_name}")
-        return clusters_names
 
     def _create_geral_column(self):
         self.comments = pd.DataFrame(data=self.comments, columns=[

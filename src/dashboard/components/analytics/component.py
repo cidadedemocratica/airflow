@@ -30,8 +30,9 @@ class AnalyticsComponent():
         self.app = app
         self.ej_users_count = 1
         self.analytics_users_count = 1
-        self.export_component = ExportsComponent("analytics", self)
         self.filters_component = FiltersComponent(self.app, self.get_figure)
+        self.export_component = ExportsComponent(
+            "analytics", app, self.filters_component)
 
     def render(self):
         """

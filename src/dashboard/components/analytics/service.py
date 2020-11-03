@@ -184,7 +184,7 @@ class AnalyticsService():
             campaign_medium, start_date, end_date)
         return self.get_analytics_users(utm_medium_query)
 
-    def filter_analytics_users_by_date(self, df, start_date, end_date):
+    def filter_analytics_users_by_date(self, start_date, end_date):
         date_query = self.get_date_filter(
             start_date, end_date)
         return self.get_analytics_users(date_query)

@@ -12,15 +12,12 @@ from dash.dependencies import Input, Output
 
 class ExportsComponent():
 
-    def __init__(self, id_prefix, app, filters_component=None):
+    def __init__(self, id_prefix, app, filters_component):
         self.id_prefix = id_prefix
         self.app = app
-        if(filters_component):
-            self.df = filters_component.get_data_to_export()
-        else:
-            self.df = pd.DataFrame({})
+        self.filters_component = filters_component
         self.data_link_display = 'none'
-        if(not self.df.empty):
+        if(not self.filters_component.get_data_to_export().empty):
             self.add_callbacks()
 
     def render(self):
@@ -51,7 +48,7 @@ class ExportsComponent():
                 return self.link_to_download()
 
     def link_to_download(self):
-        dataAsCSV = self.df.to_csv()
+        dataAsCSV = self.filters_component.get_data_to_export().to_csv()
         urlToDownload = "data:text/csv;charset=utf-8," + \
             urllib.parse.quote(dataAsCSV)
         self.data_link_display = 'block'
