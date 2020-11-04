@@ -62,13 +62,14 @@ class FiltersComponent():
              Input('participation', 'value')])
         def table_callback(_filter, app_reload, participation):
             self.reload_data_from_disk(app_reload)
-            if(participation):
-                self.comments = self.service.comments
-                self.comments = self.comments[
-                    self.comments['participação'] >= int(participation) / 100]
-            if(_filter in self.order_options):
-                self.comments = self.comments.sort_values(
-                    by=_filter, ascending=False)
+            if(not self.comments.empty):
+                if(participation):
+                    self.comments = self.service.comments
+                    self.comments = self.comments[
+                        self.comments['participação'] >= int(participation) / 100]
+                if(_filter in self.order_options):
+                    self.comments = self.comments.sort_values(
+                        by=_filter, ascending=False)
             return self.render_comments(self.comments, self.clusters)
 
     def reload_data_from_disk(self, app_reload):
