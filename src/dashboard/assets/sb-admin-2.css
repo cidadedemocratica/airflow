@@ -11340,6 +11340,7 @@ padding-left: 25px;
   padding-left: 10px;
   padding-top: 25px;
 }
+
 .hover-comments-bar .tooltip-inner {
   text-align: justify;
   white-space: pre-line;
@@ -11349,6 +11350,13 @@ padding-left: 25px;
 }
 
 .filter-title {
-	margin-right: 8px;
-	font-weight: 500;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.comments-conversation-link {
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  font-weight: bold;
 }
