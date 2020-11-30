@@ -33,7 +33,7 @@ class ExportsComponent():
             dcc.Loading(id=f"{self.id_prefix}_exporting_loader", type="default", color="#30bfd3", children=[
                 html.Div(id=f'export_{self.id_prefix}_data', children=[
                     html.A('data.csv',  style={
-                           'display': 'none'}, href='', download='ej-raw-data.csv', target="_blank")
+                           'display': 'none'}, href='', download='{self.id_prefix}-ej-raw-data.csv', target="_blank")
                 ]),
             ]),
         ])
@@ -53,4 +53,4 @@ class ExportsComponent():
             urllib.parse.quote(dataAsCSV)
         self.data_link_display = 'block'
         return html.A('data.csv',  style={
-            'display': self.data_link_display}, href=urlToDownload, download='ej-raw-data.csv', target="_blank")
+            'display': self.data_link_display}, href=urlToDownload, download=f'{self.id_prefix}-ej-raw-data.csv', target="_blank")
