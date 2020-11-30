@@ -1,30 +1,6 @@
 image: python:3.7
 stages:
-  - before_script
-  - tests
   - deploy
-
-run_tests:
-  stage: tests
-  before_script:
-    - apt update
-    - apt install -y xvfb libxi6 libgconf-2-4 unzip
-    - wget --no-verbose -O /tmp/chrome.deb http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_86.0.4240.198-1_amd64.deb
-    - wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/86.0.4240.22/chromedriver_linux64.zip
-    - wget https://selenium-release.storage.googleapis.com/3.13/selenium-server-standalone-3.13.0.jar
-    - wget http://www.java2s.com/Code/JarDownload/testng/testng-6.8.7.jar.zip
-    - unzip testng-6.8.7.jar.zip
-    - apt install -y /tmp/chrome.deb
-    - unzip /tmp/chromedriver.zip chromedriver -d /usr/bin/
-    #- chown root:root /usr/bin/chromedriver
-    - chmod +x /usr/bin/chromedriver
-  script:
-    - pip install -r /builds/pencillabs/ej/airflow_dags/src/airflow/requirements.txt
-    - python /builds/pencillabs/ej/airflow_dags/src/dashboard/server.py &
-    - pip install -r /builds/pencillabs/ej/airflow_dags/tests/requirements.txt
-    - pytest /builds/pencillabs/ej/airflow_dags/tests
-  tags:
-    - osf
 
 deploy_to_dev:
   stage: deploy
