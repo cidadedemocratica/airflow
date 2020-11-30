@@ -8,6 +8,5 @@ cp /home/airflow/dags/src/airflow/.*.env /tmp/
 rm /var/airflow/airflow-webserver.pid
 airflow initdb 2> /dev/null
 python /home/airflow/dags/src/airflow/create_superuser.py 2> /dev/null
-python /home/airflow/dags/src/dashboard/server.py &
 airflow webserver -p 8080 & 
 airflow scheduler
