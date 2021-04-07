@@ -25,7 +25,7 @@ default_args = {
     'retries': 0
 }
 
-dag = DAG('osf_pipeline', default_args=default_args)
+dag = DAG('ej_analysis_dag', default_args=default_args)
 
 t1 = EjApiOperator(
     task_id="request_conversation_votes",

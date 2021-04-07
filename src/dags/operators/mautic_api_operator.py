@@ -18,7 +18,7 @@ class MauticApiOperator(BaseOperator):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.helper = helper.OperatorHelper()
-        self.connection = BaseHook.get_connection("mautic_prod_api")
+        self.connection = BaseHook.get_connection("mautic_dev_api")
         self.df = None
         self.votes_df = None
 

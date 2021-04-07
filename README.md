@@ -17,15 +17,17 @@ usuário que acessar a página do componente, terá o cookie do Analytics salvo
 no contato do Mautic, que é criado utilizando esse [script de tracking](https://github.com/cidadedemocratica/ej-server/issues/105).
 
 
-![](docs/pipeline_de_dados.png)
-
 # Quick start
 
 Para subir o ambiente, execute a task do Makefile
 
 	make init
 
-Depois do ambiente criado, você poderá acessar o airflow em `http://localhost:8080` . Para se autenticar, use o usuário `airflow`  e a senha `airflow` .
+Uma vez que o ambiente estiver rodando, crie as conexões para que o DAG possa se conectar na api da EJ e na api do Mautic. 
+
+	make create-connections
+
+Depois do ambiente configurado, você poderá acessar o airflow em `http://localhost:8080` . Para se autenticar, use o usuário `airflow`  e a senha `airflow` . O DAG de coleta se chama `ej_analysis_dag` .
 
 # Configuração
 

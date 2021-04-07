@@ -13,6 +13,9 @@ init:
 	docker-compose up airflow-init
 	docker-compose up
 
+create-connections:
+	docker exec -t airflow_dags_airflow-webserver_1 /bin/bash -c "python dags/create_connections.py"
+
 stop:
 	docker-compose stop
 
