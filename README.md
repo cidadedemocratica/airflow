@@ -19,10 +19,18 @@ no contato do Mautic, que é criado utilizando esse [script de tracking](https:/
 
 ![](docs/pipeline_de_dados.png)
 
+# Quick start
+
+Para subir o ambiente, execute a task do Makefile
+
+	make init
+
+Depois do ambiente criado, você poderá acessar o airflow em `http://localhost:8080` . Para se autenticar, use o usuário `airflow`  e a senha `airflow` .
+
 # Configuração
 
 Para que o Operator, responsável por executar a coleta, consiga conectar tanto na EJ quanto no Mautic,
-será preciso criar as conexões definidas no arquivo de `src/ej/.prod.env`. É por meio deste arquivo
+será preciso criar as conexões definidas no arquivo de `src/airflow/.prod.env`. É por meio deste arquivo
 que o Airflow irá ter acesso à informações essenciais para sua correta execução.
 
 - **VIEW_ID**: Identificador da `view` da property configurada no analytics para o projeto. Sem esse identificador o Operator nao irá conseguir requisitar os dados de comportamento;
@@ -30,13 +38,3 @@ que o Airflow irá ter acesso à informações essenciais para sua correta execu
 - **CONVERSATION_ID**: ID da conversa de onde os votos e comentários serão requisitados;
 - **ej_conn_id**: Nome da conexexão criada no Airflow para requisição na api da EJ;
 - **mautic_conn_id**: Nome da conexexão criada no Airflow para requisição na api do Mautic;
-
-
-# Execução
-
-Para subir as instâncias do Airflow e do Jupyter, execute:
-
-	make run env=prod
-
-O Airflow possui autenticação por senha, então você irá precisar criar um usuário administrador no
-seu ambiente. O arquivo `src/create_superuser.py`, possui o passo a passo para a criação.

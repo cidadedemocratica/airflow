@@ -7,11 +7,11 @@ import json
 import requests
 from dateutil.parser import *
 
-from src import analytics_api as analytics
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
-from src.airflow.operators import helper
+from . import helper
+from . import analytics_api as analytics
 
 
 class AnalyticsApiOperator(BaseOperator):

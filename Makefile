@@ -1,17 +1,20 @@
 up:
-ifneq ($(and $(env)),)
-	env=${env} docker-compose up -d
-else
-	@printf "provide the env variable. (env=local or env=prod)"
-endif
+	docker-compose up
+
+stop:
+	docker-compose stop
 
 build:
 	docker-compose build --no-cache
 
-run:
-ifneq ($(and $(env)),)
-	env=${env} docker-compose build
-	env=${env} docker-compose up -d
-else
-	@printf "provide the env variable. (env=local or env=prod)"
-endif
+init:
+	mkdir -p ./logs ./plugins
+	echo -e "AIRFLOW_UID=$$(id -u)\nAIRFLOW_GID=0" > .env
+	docker-compose up airflow-init
+	docker-compose up
+
+stop:
+	docker-compose stop
+
+rm: stop
+	docker-compose rm

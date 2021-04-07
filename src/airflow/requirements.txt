@@ -1,13 +1,10 @@
 python-dateutil
 oauth2client
 google-api-python-client
-apache-airflow==1.10.12
-attrs==20.2.0
+attrs
 python-dotenv
-pandas
 password
 Flask-Bcrypt
 ipython
 requests
 matplotlib
-psycopg2

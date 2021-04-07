@@ -9,7 +9,7 @@ import requests
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
-from src.airflow.operators import helper
+from operators import helper
 
 
 class MauticApiOperator(BaseOperator):

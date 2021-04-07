@@ -1,4 +1,6 @@
-FROM python:3.7
-COPY src /home/airflow/dags/src/
-WORKDIR  /home/airflow/dags/src/airflow
-RUN pip install -r requirements.txt
+FROM apache/airflow:master-python3.8
+COPY src/airflow/requirements.txt /tmp
+COPY src/airflow/client_secrets.json /tmp/
+COPY src/airflow/analyticsreporting.dat /tmp/.analyticsreporting.dat
+COPY src/airflow/airflow.cfg /opt/airflow/
+RUN pip install -r /tmp/requirements.txt
