@@ -8,7 +8,7 @@ build:
 	docker-compose build --no-cache
 
 init:
-	mkdir -p ./logs ./plugins
+	mkdir -p ./src/logs ./src/plugins
 	echo -e "AIRFLOW_UID=$$(id -u)\nAIRFLOW_GID=0" > .env
 	docker-compose up airflow-init
 	docker-compose up

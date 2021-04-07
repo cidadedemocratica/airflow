@@ -53,9 +53,9 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
   volumes:
-    - ./src/airflow/:/opt/airflow/dags
-    - ./logs:/opt/airflow/logs
-    - ./plugins:/opt/airflow/plugins
+    - ./src/dags/:/opt/airflow/dags/
+    - ./src/logs/:/opt/airflow/logs/
+    - ./src/plugins/:/opt/airflow/plugins/
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
     redis:

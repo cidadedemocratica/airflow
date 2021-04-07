@@ -1,3 +1,5 @@
 .env
 __pycache__/
 src/ej/.ipynb_checkpoints/
+src/logs/
+src/plugins/
