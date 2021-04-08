@@ -52,7 +52,7 @@ class MauticApiOperator(BaseOperator):
     def _get_contact(self, mtc_id):
         url = self._get_url(mtc_id)
         headers = {
-            "Authorization": f'Basic cmljYXJkb0BjaWRhZGVkZW1vY3JhdGljYS5vcmcuYnI6cVlVNjQzNHJPRjNQ'}
+            "Authorization": f'Basic cGVuY2lsbGFiczpAUGVuYzFsTGFiNQ=='}
         response = requests.get(url, headers=headers)
         return response.json()['contact']
 

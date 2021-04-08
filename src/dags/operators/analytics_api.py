@@ -22,7 +22,7 @@ SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 # Path to client_secrets.json file.
 CLIENT_SECRETS_PATH = '/tmp/client_secrets.json'
 # VIEW_ID = os.getenv("VIEW_ID")
-VIEW_ID = "215248741"
+VIEW_ID = "238550611"
 
 
 def initialize_analyticsreporting():
@@ -46,7 +46,7 @@ def initialize_analyticsreporting():
     # If the credentials don't exist or are invalid run through the native client
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
-    storage = file.Storage("/tmp/.analyticsreporting.dat")
+    storage = file.Storage("/opt/airflow/dags/analyticsreporting.dat")
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)
