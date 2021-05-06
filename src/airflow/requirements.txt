@@ -1,7 +1,7 @@
 python-dateutil
 oauth2client
 google-api-python-client
-apache-airflow==1.10.12
+apache-airflow==1.10.15
 attrs==20.2.0
 python-dotenv
 pandas
