@@ -89,5 +89,5 @@ class EjApiOperator(BaseOperator):
 
     def save(self, data):
         file_name = f"{self.data_type}.json"
-        with open(f"/tmp/{file_name}", "w") as f:
+        with open(f"/opt/airflow/data/{file_name}", "w") as f:
             f.write(json.dumps(data))

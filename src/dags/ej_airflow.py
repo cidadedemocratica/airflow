@@ -6,9 +6,7 @@ import pandas as pd
 
 from operators import (
     EjApiOperator,
-    MauticApiOperator,
     AnalyticsApiOperator,
-    MergeAnalyticsMauticOperator,
 )
 from airflow.models import DAG
 from dotenv import load_dotenv
@@ -39,6 +37,9 @@ with DAG("ej_analysis_dag", default_args=default_args) as dag:
         data_type="votes",
     )
 
-    t2 = AnalyticsApiOperator(task_id="merge_votes_with_analytics")
+    t2 = AnalyticsApiOperator(
+        task_id="merge_votes_with_analytics",
+        conversation_start_date="{{ dag_run.conf.get('conversation_start_date') or '' }}",
+        conversation_end_date="{{ dag_run.conf.get('conversation_end_date') or '' }}")
 
     t1 >> t2

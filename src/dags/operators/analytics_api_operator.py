@@ -6,47 +6,68 @@ import time
 import json
 import requests
 from dateutil.parser import *
+from dateutil.tz import tzlocal
 
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
 from . import helper
 from . import analytics_api as analytics
+from .mongodb_helper import MongodbHelper
 
 
 class AnalyticsApiOperator(BaseOperator):
-    @apply_defaults
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+
+    template_fields = (
+        "conversation_start_date",
+        "conversation_end_date",
+    )
+
+    def __init__(
+        self, conversation_start_date: str, conversation_end_date: str, **kwargs
+    ) -> None:
+        super().__init__(**kwargs)
+        self.conversation_start_date = conversation_start_date
+        self.conversation_end_date = conversation_end_date
+
+    def execute(self, context):
         try:
-            self.votes_df = pd.read_json("/tmp/votes.json")
+            self.votes_df = pd.read_json("/opt/airflow/data/votes.json")
         except:
             pass
         self.helper = helper.OperatorHelper()
         self.analytics_client = analytics.initialize_analyticsreporting()
-
-    def execute(self, context):
+        self.mongodb_helper = MongodbHelper()
         self.merge_with_analytics()
+        self.mongodb_helper.save_votes(self.votes_dataframe)
 
-    def vote_belongs_to_activity(self, voteCreatedTime, activityTime):
-        # Votes from EJ, are in utc date format, activities from analytics are not.
-        # We will have to parse all to utc (better solution).
-        # For a quick fix, we subtract three hours from vote date, to match Sao Paulo timzone.
-        utc_vote_date = parse(voteCreatedTime) - datetime.timedelta(hours=3)
-        utc_offeset_timedelta = datetime.datetime.utcnow() - datetime.datetime.now()
-        utc_activity_time = parse(activityTime) + utc_offeset_timedelta
-        deltaDate = utc_activity_time + datetime.timedelta(minutes=30)
-        return utc_vote_date < deltaDate and utc_vote_date >= utc_activity_time
+    def vote_belongs_to_activity(self, voteTimestamp, activityTimestamp):
+        """
+        Checks if a vote was created by a activity by comparing their timestamps.
+        if timezone_activity + delta is bigger then voteTimestamp, we assume that the vote was created by the activity.
+        """
+        # voteTimestamp is a naive timestamp. timezone_vote is a datetime with tzlocal zone
+        timezone_vote = datetime.datetime.fromtimestamp(
+            voteTimestamp / 1000, tz=tzlocal()
+        )
+        timezone_activity = parse(activityTimestamp)
+        delta = datetime.timedelta(minutes=10)
+        return timezone_activity + delta >= timezone_vote
 
     def get_gid_votes(self, _id):
         return self.votes_dataframe[
             self.votes_dataframe.author__metadata__analytics_id == _id
-        ]["criado"]
+        ]["created"]
 
     def get_gid_activities(self, gid):
         if not gid or gid == "1":
             return []
-        report = analytics.get_user_activity(self.analytics_client, gid)
+        report = analytics.get_user_activity(
+            self.analytics_client,
+            gid,
+            self.conversation_start_date,
+            self.conversation_end_date,
+        )
         return self.get_sessions_activities(report["sessions"])
 
     def get_sessions_activities(self, sessions):
@@ -55,22 +76,22 @@ class AnalyticsApiOperator(BaseOperator):
         list(map(lambda x: activities.append(x.pop()), sessions_activities))
         return activities
 
-    def update_df_with_activity(self, activity, voteTime, gid):
+    def merge_ej_and_analytics(self, activity, voteTime, gid):
         df = self.votes_dataframe
         df.loc[
-            (df["criado"] == voteTime) & (df.author__metadata__analytics_id == gid),
+            (df["created"] == voteTime) & (df.author__metadata__analytics_id == gid),
             "analytics_source",
         ] = activity["source"]
         df.loc[
-            (df["criado"] == voteTime) & (df.author__metadata__analytics_id == gid),
+            (df["created"] == voteTime) & (df.author__metadata__analytics_id == gid),
             "analytics_medium",
         ] = activity["medium"]
         df.loc[
-            (df["criado"] == voteTime) & (df.author__metadata__analytics_id == gid),
+            (df["created"] == voteTime) & (df.author__metadata__analytics_id == gid),
             "analytics_pageview",
         ] = activity["pageview"]["pagePath"]
         df.loc[
-            (df["criado"] == voteTime) & (df.author__metadata__analytics_id == gid),
+            (df["created"] == voteTime) & (df.author__metadata__analytics_id == gid),
             "analytics_campaign",
         ] = activity["campaign"]
         return df
@@ -84,18 +105,17 @@ class AnalyticsApiOperator(BaseOperator):
             print(f"{len(gids)} GIDS TO PROCESS")
             for idx, gid in enumerate(gids):
                 try:
-                    activities = self.get_gid_activities(gid)
-                    voteTimeStamps = self.get_gid_votes(gid)
-                    for activity in activities:
-                        for voteTime in voteTimeStamps:
+                    gidActivities = self.get_gid_activities(gid)
+                    gidVotesTimestamps = self.get_gid_votes(gid)
+                    for activity in gidActivities:
+                        for vote_timestamp in gidVotesTimestamps:
                             belongs = self.vote_belongs_to_activity(
-                                voteTime, activity["activityTime"]
+                                vote_timestamp, activity["activityTime"]
                             )
                             if belongs:
-                                self.votes_dataframe = self.update_df_with_activity(
-                                    activity, voteTime, gid
+                                self.votes_dataframe = self.merge_ej_and_analytics(
+                                    activity, vote_timestamp, gid
                                 )
-                    self.votes_dataframe.to_json("/tmp/votes_analytics.json")
                 except Exception as err:
                     print(err)
                     pass

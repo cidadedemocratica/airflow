@@ -2,4 +2,5 @@ FROM apache/airflow:2.1.0-python3.8
 COPY src/dags/requirements.txt /tmp/
 COPY src/dags/client_secrets.json /tmp/
 COPY src/dags/analyticsreporting.dat /tmp/.analyticsreporting.dat
+RUN mkdir /opt/airflow/data
 RUN pip install -r /tmp/requirements.txt

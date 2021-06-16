@@ -23,7 +23,7 @@ SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
 # Path to client_secrets.json file.
 CLIENT_SECRETS_PATH = "/tmp/client_secrets.json"
 # VIEW_ID = os.getenv("VIEW_ID")
-VIEW_ID = "238550611"
+VIEW_ID = "215349778"
 
 
 def initialize_analyticsreporting():
@@ -61,14 +61,12 @@ def initialize_analyticsreporting():
     return analytics
 
 
-def get_user_activity(analytics, userID):
-    # start from datetime.now - 60 days
-    startDate = (
-        datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=90)
-    ).strftime("%Y-%m-%d")
-    # include today on report
-    endDate = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
-
+def get_user_activity(analytics, userID, start_date, end_date):
+    if not (start_date and end_date):
+        start_date = (
+            datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=90)
+        ).strftime("%Y-%m-%d")
+        end_date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     return (
         analytics.userActivity()
         .search(
@@ -78,65 +76,8 @@ def get_user_activity(analytics, userID):
                     "type": "CLIENT_ID",
                     "userId": re.sub(r"^[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.", "", userID),
                 },
-                "dateRange": {"startDate": startDate, "endDate": endDate},
+                "dateRange": {"startDate": start_date, "endDate": end_date},
             }
         )
         .execute()
     )
-
-
-def get_report(analytics):
-    # start from datetime.now - 60 days
-    startDate = (
-        datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=90)
-    ).strftime("%Y-%m-%d")
-    # include today on report
-    endDate = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
-    return (
-        analytics.reports()
-        .batchGet(
-            body={
-                "reportRequests": [
-                    {
-                        "viewId": VIEW_ID,
-                        "dateRanges": {"startDate": startDate, "endDate": endDate},
-                        "metrics": [
-                            {
-                                "expression": "ga:newUsers",
-                                "alias": "newUsers",
-                                "formattingType": "INTEGER",
-                            }
-                        ],
-                        "dimensions": [{"name": "ga:pagePath"}],
-                        "filtersExpression": "ga:pagePath==/opiniao/",
-                    }
-                ],
-                "useResourceQuotas": False,
-            }
-        )
-        .execute()
-    )
-
-
-def print_response(response):
-    """Parses and prints the Analytics Reporting API V4 response"""
-
-    for report in response.get("reports", []):
-        columnHeader = report.get("columnHeader", {})
-        dimensionHeaders = columnHeader.get("dimensions", [])
-        metricHeaders = columnHeader.get("metricHeader", {}).get(
-            "metricHeaderEntries", []
-        )
-        rows = report.get("data", {}).get("rows", [])
-
-        for row in rows:
-            dimensions = row.get("dimensions", [])
-            dateRangeValues = row.get("metrics", [])
-
-            for header, dimension in zip(dimensionHeaders, dimensions):
-                print(header + ": " + dimension)
-
-            for i, values in enumerate(dateRangeValues):
-                print("Date range (" + str(i) + ")")
-                for metricHeader, value in zip(metricHeaders, values.get("values")):
-                    print(metricHeader.get("name") + ": " + value)
