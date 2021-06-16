@@ -20,8 +20,11 @@ class MergeAnalyticsMauticOperator(BaseOperator):
         self.helper = helper.OperatorHelper()
 
     def execute(self, context):
-        votes_analytics = pd.read_json('/tmp/votes_analytics.json')
-        votes_mautic = pd.read_json('/tmp/votes_mautic.json')
-        df = pd.concat([votes_analytics, pd.DataFrame(votes_mautic, columns=[
-            'mtc_email', 'mtc_first_name', 'mtc_last_name'])], axis=1)
-        df.to_json('/tmp/votes_analytics_mautic.json')
+        try: 
+            votes_analytics = pd.read_json('/tmp/votes_analytics.json')
+            votes_mautic = pd.read_json('/tmp/votes_mautic.json')
+            df = pd.concat([votes_analytics, pd.DataFrame(votes_mautic, columns=[
+                'mtc_email', 'mtc_first_name', 'mtc_last_name'])], axis=1)
+            df.to_json('/tmp/votes_analytics_mautic.json')
+        except: 
+            print("could not merge votes_analytics.json and votes_mautic.json") 

@@ -39,7 +39,6 @@
 version: '3'
 x-airflow-common:
   &airflow-common
-  #image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.0.1}
   build:
     context: ./
     dockerfile: Dockerfile-airflow
@@ -51,11 +50,12 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
   volumes:
-    - ./src/dags/:/opt/airflow/dags/
-    - ./src/logs/:/opt/airflow/logs/
-    - ./src/plugins/:/opt/airflow/plugins/
+    - ./src/dags:/opt/airflow/dags
+    - ./src/logs:/opt/airflow/logs
+    - ./src/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
     redis:
@@ -104,11 +104,23 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: always
 
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - 'celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: always
 
   airflow-init:

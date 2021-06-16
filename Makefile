@@ -21,3 +21,6 @@ stop:
 
 rm: stop
 	docker-compose rm
+
+attach:
+	docker exec -it airflow_dags_airflow-webserver_1 bash
