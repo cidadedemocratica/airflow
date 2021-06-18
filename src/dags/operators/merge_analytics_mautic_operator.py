@@ -9,14 +9,12 @@ import requests
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
-from . import helper
 
 
 class MergeAnalyticsMauticOperator(BaseOperator):
     @apply_defaults
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.helper = helper.OperatorHelper()
 
     def execute(self, context):
         try:

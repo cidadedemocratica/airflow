@@ -24,8 +24,8 @@ default_args = {
     "email": ["airflow@example.com"],
     "email_on_failure": False,
     "email_on_retry": False,
-    "retries": 0,
-    "schedule_interval": None,
+    "retries": 1,
+    "schedule_interval": "@daily",
 }
 
 with DAG("ej_analysis_dag", default_args=default_args) as dag:
@@ -40,6 +40,8 @@ with DAG("ej_analysis_dag", default_args=default_args) as dag:
     t2 = AnalyticsApiOperator(
         task_id="merge_votes_with_analytics",
         conversation_start_date="{{ dag_run.conf.get('conversation_start_date') or '' }}",
-        conversation_end_date="{{ dag_run.conf.get('conversation_end_date') or '' }}")
+        conversation_end_date="{{ dag_run.conf.get('conversation_end_date') or '' }}",
+        analytics_view_id="{{ dag_run.conf.get('analytics_view_id') or '' }}"
+    )
 
     t1 >> t2

@@ -9,14 +9,12 @@ import requests
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
-from operators import helper
 
 
 class MauticApiOperator(BaseOperator):
     @apply_defaults
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.helper = helper.OperatorHelper()
         self.connection = BaseHook.get_connection("mautic_dev_api")
         self.df = None
         self.votes_df = None

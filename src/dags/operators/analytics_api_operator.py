@@ -11,9 +11,8 @@ from dateutil.tz import tzlocal
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.base_hook import BaseHook
-from . import helper
 from . import analytics_api as analytics
-from .mongodb_helper import MongodbHelper
+from .mongodb_wrapper import MongodbWrapper
 
 
 class AnalyticsApiOperator(BaseOperator):
@@ -21,25 +20,26 @@ class AnalyticsApiOperator(BaseOperator):
     template_fields = (
         "conversation_start_date",
         "conversation_end_date",
+        "analytics_view_id"
     )
 
     def __init__(
-        self, conversation_start_date: str, conversation_end_date: str, **kwargs
+        self, conversation_start_date: str, conversation_end_date: str, analytics_view_id: str, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.conversation_start_date = conversation_start_date
         self.conversation_end_date = conversation_end_date
+        self.analytics_view_id = analytics_view_id
 
     def execute(self, context):
         try:
             self.votes_df = pd.read_json("/opt/airflow/data/votes.json")
         except:
             pass
-        self.helper = helper.OperatorHelper()
         self.analytics_client = analytics.initialize_analyticsreporting()
-        self.mongodb_helper = MongodbHelper()
+        self.mongodb_wrapper = MongodbWrapper()
         self.merge_with_analytics()
-        self.mongodb_helper.save_votes(self.votes_dataframe)
+        self.mongodb_wrapper.save_votes(self.votes_dataframe)
 
     def vote_belongs_to_activity(self, voteTimestamp, activityTimestamp):
         """
@@ -64,6 +64,7 @@ class AnalyticsApiOperator(BaseOperator):
             return []
         report = analytics.get_user_activity(
             self.analytics_client,
+            self.analytics_view_id,
             gid,
             self.conversation_start_date,
             self.conversation_end_date,

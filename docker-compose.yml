@@ -52,6 +52,10 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
+    MONGODB_ANALYSIS_HOST: 192.168.15.101
+    MONGODB_ANALYSIS_PORT: 27017
+    MONGODB_ANALYSIS_USERNAME: mongo
+    MONGO_INITDB_ROOT_PASSWORD: mongo
   volumes:
     - ./src/dags:/opt/airflow/dags
     - ./src/logs:/opt/airflow/logs
@@ -96,6 +100,8 @@ services:
       environment:
         MONGO_INITDB_ROOT_USERNAME: mongo
         MONGO_INITDB_ROOT_PASSWORD: mongo
+      ports:
+        - 27017:27017
 
   mongo-express:
       image: mongo-express
