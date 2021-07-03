@@ -73,7 +73,7 @@ class EjApiOperator(BaseOperator):
             response = requests.post(url, body, headers=headers)
         if method == "get":
             response = requests.get(url, headers=headers)
-        if response.status_code == 201 or response.status_code == 200:
+        if response and (response.status_code == 201 or response.status_code == 200):
             return response.json()
         else:
             raise Exception("could not get user auth token")
